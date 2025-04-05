@@ -297,3 +297,4 @@ local Togglespearrefill = Tabs.Main:AddToggle("Spear Refill",
         end 
     end 
 })
+SaveManager:LoadAutoloadConfig()
