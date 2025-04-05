@@ -8,12 +8,23 @@ local rootPart = character:WaitForChild("HumanoidRootPart")
 local titansFolder = Workspace:WaitForChild("Titans")
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
 local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
-
+getgenv().print = function() end
+getgenv().warn = function() end
+local replicatedStorage = game:GetService("ReplicatedStorage")
+local workspaceService = game:GetService("Workspace")
+local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
+local TeleportService = game:GetService("TeleportService")
+local http = game:GetService("HttpService");
+local VIM = game:GetService("VirtualInputManager");
+local Players = game:GetService("Players");
+local ReplicatedStorage = game:GetService("ReplicatedStorage");
+local LocalPlayer = Players.LocalPlayer;
+local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
+local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
 local toggleState = false          
 local defeatErenExists = false     
 
 
-local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 
 local Window = Fluent:CreateWindow({
     Title = "Nexus Hub AoT:R",
