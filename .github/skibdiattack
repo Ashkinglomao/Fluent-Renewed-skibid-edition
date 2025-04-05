@@ -6,6 +6,8 @@ local LocalPlayer = Players.LocalPlayer
 local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 local rootPart = character:WaitForChild("HumanoidRootPart")
 local titansFolder = Workspace:WaitForChild("Titans")
+local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
+local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
 
 local toggleState = false          
 local defeatErenExists = false     
