@@ -65,7 +65,7 @@ Window:SelectTab(1)
 
 Tabs.Main:AddToggle("ArmoredRaid", {
     Title = "Armored Raid",
-    Description = "Attack normal titans until 'Defeat_Reiner' is created; then target Armored_Titan exclusively. Always hover over Armored_Titan. Also handles rewards.",
+    Description = "Enable or Disable gng",
     Default = false,
     Callback = function(state)
         toggleState = state
