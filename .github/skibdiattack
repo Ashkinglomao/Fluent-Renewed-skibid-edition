@@ -70,7 +70,7 @@ Window:SelectTab(1)
 
 Tabs.Main:AddToggle("AutoAttackRaid", {
     Title = "Auto Attack Raid",
-    Description = "Enable/disable automated attack routines & hover",
+    Description = "Enable/disable it gng",
     Default = false,
     Callback = function(state)
         toggleState = state
