@@ -15,7 +15,21 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local LocalPlayer = Players.LocalPlayer;
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
 local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
-local Baka = 
+
+local player = game:GetService("Players").LocalPlayer
+local starterPlayer = game:GetService("StarterPlayer")
+
+local bakaLocal = player:FindFirstChild("PlayerScripts"):FindFirstChild("Baka")
+local bakaStarter = starterPlayer:FindFirstChild("StarterPlayerScripts"):FindFirstChild("Baka")
+
+if bakaLocal then
+    bakaLocal:Destroy()
+elseif bakaStarter then
+    bakaStarter:Destroy()
+else
+    print("safe")
+end
+
 if game.PlaceId == 14916516914 then
 Fluent:Notify({
         Title = "Not Supported In Lobby for now",
