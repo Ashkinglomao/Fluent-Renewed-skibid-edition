@@ -146,12 +146,12 @@ local function AutoAttackRaid_MasterAttack()
         if debris and debris:FindFirstChild("Roar") then
             print("Titan is roaring, skipping attack.")
         else
-            -- Retrieve the remaining ammo directly from the UI
+            
             local spearText = LocalPlayer.PlayerGui.Interface.HUD.Main.Top.Spears.Spears.Text
-            local remainingAmmo = tonumber(string.match(spearText, "%d+")) or 0  -- Convert text to number
+            local remainingAmmo = tonumber(string.match(spearText, "%d+")) or 0  
 
             if remainingAmmo > 0 then
-                -- Fire spears at non-attack titans
+                
                 local titansToAttack = {}
                 for _, titan in pairs(titansFolder:GetChildren()) do
                     if titan.Name ~= "Attack_Titan" and not titan:FindFirstChild("Dead") then
@@ -164,14 +164,14 @@ local function AutoAttackRaid_MasterAttack()
                     end
                 end
 
-                -- Fire spears at each non-attack titan
+             
                 if #titansToAttack > 0 then
                     for _, pos in ipairs(titansToAttack) do
                         ReplicatedStorage:WaitForChild("Assets")
                             :WaitForChild("Remotes")
                             :WaitForChild("GET")
                             :InvokeServer("Spears", "S_Fire", tostring(remainingAmmo))
-                        -- Explode the spear at the titan's nape
+                    
                         ReplicatedStorage:WaitForChild("Assets")
                             :WaitForChild("Remotes")
                             :WaitForChild("POST")
@@ -182,13 +182,12 @@ local function AutoAttackRaid_MasterAttack()
                     print("No non-attack titans found.")
                 end
 
-                -- When Eren (Attack_Titan) is available, fire rapidly at him
                 local attackTitan = titansFolder:FindFirstChild("Attack_Titan")
                 if attackTitan and attackTitan:FindFirstChild("Hitboxes") then
                     local attackNape = attackTitan.Hitboxes:FindFirstChild("Hit")
                                          and attackTitan.Hitboxes.Hit:FindFirstChild("Nape")
                     if attackNape then
-                        for _ = 1, 5 do  -- Fire rapidly at Eren
+                        for _ = 1, 5 do  
                             ReplicatedStorage:WaitForChild("Assets")
                                 :WaitForChild("Remotes")
                                 :WaitForChild("GET")
@@ -205,7 +204,7 @@ local function AutoAttackRaid_MasterAttack()
                 print("No ammo left!")
             end
         end
-        task.wait(0.5)  -- Small wait before checking the next batch of titans
+        task.wait(0.5)  
     end
 end
 
