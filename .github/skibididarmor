@@ -1,12 +1,10 @@
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Workspace = game:GetService("Workspace")
-local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
-local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
-local LocalPlayer = Players.LocalPlayer
-local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-local rootPart = character:WaitForChild("HumanoidRootPart")
-local TitansFolder = Workspace:WaitForChild("Titans")
+
+while not game:IsLoaded() do
+    task.wait(0.1)
+end
+
+getgenv().print = function() end
+getgenv().warn = function() end
 local replicatedStorage = game:GetService("ReplicatedStorage")
 local workspaceService = game:GetService("Workspace")
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
@@ -19,52 +17,87 @@ local LocalPlayer = Players.LocalPlayer;
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
 local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
 
-local MasterLoop, AutoHoverReinerTarget, RewardLoop, AutoAttackRaid_HandleRewards
+if game.PlaceId == 14916516914 then
+Fluent:Notify({
+        Title = "Not Supported In Lobby for now",
+        Content = "Please execute in a mission or raid",
+        SubContent = "Thank you", 
+        Duration = 5 
+})
 
-local Window = Fluent:CreateWindow({
+
+else 
+
+local replicatedStorage = game:GetService("ReplicatedStorage")
+local objectives = replicatedStorage:WaitForChild("Objectives")
+
+local slay = objectives:FindFirstChild("Stall_Time")
+if slay then
+    
+    while not slay:GetAttribute("Requirement") do
+        task.wait(0.1)
+    end
+
+  
+    local waitForTitansNumber = slay:GetAttribute("Requirement")
+    local workspaceService = game:GetService("Workspace")
+    local titansFolder = workspaceService:WaitForChild("Titans")
+
+
+    print("Slay objective condition met!")
+
+else
+
+    local defendEren = objectives:FindFirstChild("Defend_Eren")
+    if defendEren then
+        print("Slay isn't present, but Defend_Eren exists.")
+    else
+        warn("Neither Slay nor Defend_Eren exist.")
+    end
+
+end
+
+	local Stall_Time  = game:GetService("ReplicatedStorage").Objectives.Stall_Time
+	local Requirementforstall = Stall_Time:GetAttribute("Requirement")
+	local Valueforstall = 
+
+print("Objective requirement detected!")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local workspace = game:GetService("Workspace")
+local cf = workspace:WaitForChild("Characters")
+local cfc = cf:WaitForChild(player.Name)
+local rigChildName = "Rig_" .. player.Name
+local rigChild = cfc:WaitForChild(rigChildName)
+	local Window = Fluent:CreateWindow({
     Title = "Nexus Hub AoT:R",
     SubTitle = "by Ash",
     TabWidth = 160,
     Size = UDim2.fromOffset(580, 460),
-    Acrylic = true,
+    Acrylic = true, 
     Theme = "Darker",
-    MinimizeKey = Enum.KeyCode.LeftControl,
+    MinimizeKey = Enum.KeyCode.LeftControl 
 })
-
 local Tabs = {
-    Main     = Window:AddTab({ Title = "Main", Icon = "" }),
-    Extras   = Window:AddTab({ Title = "Extras", Icon = "" }),
-    Misc     = Window:AddTab({ Title = "Misc", Icon = "" }),
-    Discord  = Window:AddTab({ Title = "Discord", Icon = "" }),
+    Main = Window:AddTab({ Title = "Main", Icon = "" }),
+    Extras = Window:AddTab({ Title = "Extras", Icon = "" }),
+    Misc = Window:AddTab({ Title = "Misc", Icon = "" }),
+    Discord = Window:AddTab({ Title = "Discord", Icon = "" }),
     Settings = Window:AddTab({ Title = "Settings", Icon = "" }),
 }
 
 Tabs.Discord:AddParagraph({
     Title = "Discord Invite",
-    Content = "https://discord.gg/KEF7xMZQPP"
+    Content = "https://discord.gg/3GaHgcGGhv"
 })
 Tabs.Discord:AddButton({
     Title = "Copy Discord Invite",
     Description = "Copy Discord Invite",
     Callback = function()
-   setclipboard("https://discord.gg/KEF7xMZQPP")
+   setclipboard("https://discord.gg/3GaHgcGGhv")
     end
 })
-
-
-local player = game:GetService("Players").LocalPlayer
-local starterPlayer = game:GetService("StarterPlayer")
-
-local bakaLocal = player:WaitForChild("PlayerScripts"):FindFirstChild("Baka")
-local bakaStarter = starterPlayer:WaitForChild("StarterPlayerScripts"):FindFirstChild("Baka")
-
-if bakaLocal then
-    bakaLocal:Destroy()
-elseif bakaStarter then
-    bakaStarter:Destroy()
-else
-    print("safe")
-end
 
 
 InterfaceManager:SetFolder("NexusHub")
@@ -78,248 +111,527 @@ SaveManager:BuildConfigSection(Tabs.Settings)
 
 Window:SelectTab(1)
 
-Tabs.Main:AddToggle("ArmoredRaid", {
-    Title = "Armored Raid",
-    Description = "Enable or Disable gng",
+
+
+local TeleportService = game:GetService("TeleportService")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local placeId = 14916516914 
+local missionFile = "mission_count.txt"
+
+
+local function getMissionCount()
+    local count = 0
+    if isfile(missionFile) then
+        local content = readfile(missionFile)
+        count = tonumber(content) or 0
+    end
+    return count
+end
+
+
+local function setMissionCount(count)
+    writefile(missionFile, tostring(count))
+end
+
+
+local function teleportToLobby()
+    print("[Teleport] 10 missions done! Going to lobby.")
+    setMissionCount(0) 
+    TeleportService:Teleport(placeId, player)
+end
+
+
+local autoTrackEnabled = false
+
+local function onMissionComplete()
+    if not autoTrackEnabled then return end
+    local count = getMissionCount() + 1
+    print("[Mission] Completed mission", count)
+    if count >= 10 then
+        teleportToLobby()
+    else
+        setMissionCount(count)
+    end
+end
+
+local Toggle = Tabs.Extras:AddToggle("AutoMissionTracker", {
+    Title = "DO NOT USE NOT READY",
+    Description = "DO NOT USE",
     Default = false,
     Callback = function(state)
-        toggleState = state
-        if state then
-            spawn(function() MasterLoop() end)         
-            spawn(function() AutoHoverReinerTarget() end) 
-            spawn(function() RewardLoop() end)            
-        end
-    end,
+        autoTrackEnabled = state
+        print("AutoTrack is now", state and "ON" or "OFF")
+    end
 })
 
-local function GetRemainingAmmo()
-    local guiText = LocalPlayer.PlayerGui.Interface.HUD.Main.Top.Spears.Spears.Text
-    local ammo = tonumber(string.match(guiText, "%d+"))
-    return ammo or 0
+local function AutoAttackRaid_GetRemainingAmmo()
+    local spearText = LocalPlayer.PlayerGui.Interface.HUD.Main.Top.Spears.Spears.Text
+    return tonumber(string.match(spearText, "%d+")) or 0
 end
 
-function MasterLoop()
-    while toggleState do
-        local ammo = GetRemainingAmmo()
-        local debris = Workspace:FindFirstChild("Debris")
-        local roarExists = (debris and debris:FindFirstChild("Roar") ~= nil)
-        local objectives = ReplicatedStorage:FindFirstChild("Objectives")
-        local defeatReiner = (objectives and objectives:FindFirstChild("Defeat_Reiner"))
+
+local function WaitForSlayThenAdd()
+    local Slay = ReplicatedStorage.Objectives:WaitForChild("Stall_Time")
+    local requirement = Slay:GetAttribute("Requirement")
+    print("[WaitForSlayThenAdd] Waiting for Slay objective to reach requirement:", requirement)
+    
+    while Slay.Value ~= requirement do
+        task.wait(0.1)
+    end
+
+    local args = {
+        "Functions",
+        "Retry",
+        "Add"
+    }
+    ReplicatedStorage
+        :WaitForChild("Assets")
+        :WaitForChild("Remotes")
+        :WaitForChild("GET")
+        :InvokeServer(unpack(args))
         
-        if defeatReiner then
-           
-            local armoredTitan = TitansFolder:FindFirstChild("Armored_Titan")
-            if armoredTitan then
-                local hitboxes = armoredTitan:FindFirstChild("Hitboxes")
-                if hitboxes then
-                    local hit = hitboxes:FindFirstChild("Hit")
-                    if hit then
-                        local nape = hit:FindFirstChild("Nape")
-                        if nape and nape:IsA("BasePart") then
-                            if ammo > 0 and not roarExists then
-                                ReplicatedStorage:WaitForChild("Assets")
-                                    :WaitForChild("Remotes")
-                                    :WaitForChild("GET")
-                                    :InvokeServer("Spears", "S_Fire", tostring(ammo))
-                            end
-                            for i = 1, 60 do
-                                ReplicatedStorage:WaitForChild("Assets")
-                                    :WaitForChild("Remotes")
-                                    :WaitForChild("POST")
-                                    :FireServer("Spears", "S_Explode", nape.Position, 0.11289310455322266, 777.47021484375)
-                            end
-                        end
-                    end
-                end
-            end
-            wait(1)
-        else
-            
-            if ammo > 0 and not roarExists then
-                ReplicatedStorage:WaitForChild("Assets")
-                    :WaitForChild("Remotes")
-                    :WaitForChild("GET")
-                    :InvokeServer("Spears", "S_Fire", tostring(ammo))
-            end
-            for _, titan in pairs(TitansFolder:GetChildren()) do
-                if titan.Name ~= "Armored_Titan" then
-                    local hitboxes = titan:FindFirstChild("Hitboxes")
-                    if hitboxes then
-                        local hit = hitboxes:FindFirstChild("Hit")
-                        if hit then
-                            local nape = hit:FindFirstChild("Nape")
-                            if nape and nape:IsA("BasePart") then
-                                ReplicatedStorage:WaitForChild("Assets")
-                                    :WaitForChild("Remotes")
-                                    :WaitForChild("POST")
-                                    :FireServer("Spears", "S_Explode", nape.Position, 0.11289310455322266, 777.47021484375)
-                            end
-                        end
-                    end
-                end
-            end
-            wait(3)
-        end
-    end
-end
-
-function AutoHoverReinerTarget()
-    while toggleState do
-        local armoredTitan = TitansFolder:FindFirstChild("Armored_Titan")
-        if armoredTitan then
-            local targetPart = nil
-            local hitboxes = armoredTitan:FindFirstChild("Hitboxes")
-            if hitboxes then
-                local hit = hitboxes:FindFirstChild("Hit")
-                if hit then
-                    local nape = hit:FindFirstChild("Nape")
-                    if nape and nape:IsA("BasePart") then
-                        targetPart = nape
-                    end
-                end
-            end
-            if not targetPart then
-                targetPart = armoredTitan:FindFirstChild("HumanoidRootPart")
-            end
-            if targetPart and targetPart:IsA("BasePart") then
-                local bp = rootPart:FindFirstChild("AutoHoverBP")
-                if not bp then
-                    bp = Instance.new("BodyPosition")
-                    bp.Name = "AutoHoverBP"
-                    bp.Parent = rootPart
-                    bp.MaxForce = Vector3.new(1e6, 1e6, 1e6)
-                    bp.P = 5000
-                    bp.D = 500
-                end
-                local bg = rootPart:FindFirstChild("AutoHoverBG")
-                if not bg then
-                    bg = Instance.new("BodyGyro")
-                    bg.Name = "AutoHoverBG"
-                    bg.Parent = rootPart
-                    bg.MaxTorque = Vector3.new(1e6, 1e6, 1e6)
-                    bg.P = 2500
-                end
-                local targetPos = targetPart.Position + Vector3.new(0, 1000, 0)
-                bp.Position = targetPos
-            else
-                local existBP = rootPart:FindFirstChild("AutoHoverBP")
-                if existBP then existBP:Destroy() end
-                local existBG = rootPart:FindFirstChild("AutoHoverBG")
-                if existBG then existBG:Destroy() end
-            end
-        else
-            local existBP = rootPart:FindFirstChild("AutoHoverBP")
-            if existBP then existBP:Destroy() end
-            local existBG = rootPart:FindFirstChild("AutoHoverBG")
-            if existBG then existBG:Destroy() end
-        end
-        wait(0.1)
-    end
-    local existBP = rootPart:FindFirstChild("AutoHoverBP")
-    if existBP then existBP:Destroy() end
-    local existBG = rootPart:FindFirstChild("AutoHoverBG")
-    if existBG then existBG:Destroy() end
+    print("[WaitForSlayThenAdd] Slay objective met; GET remote fired with:", unpack(args))
+	onMissionComplete()
 end
 
 
-function AutoAttackRaid_HandleRewards()
-    local objectives = ReplicatedStorage:FindFirstChild("Objectives")
-    if objectives then
-        local defeatReinerObjective = objectives:FindFirstChild("Defeat_Reiner")
-        if defeatReinerObjective then
-            if defeatReinerObjective.Value == 1 then 
-                task.wait(7)
-                task.wait(0.5)
-                local premiumArgs = { "S_Rewards", "Chest", "Premium" }
-                ReplicatedStorage:WaitForChild("Assets")
-                    :WaitForChild("Remotes")
-                    :WaitForChild("GET")
-                    :InvokeServer(table.unpack(premiumArgs))
-                local freeArgs = { "S_Rewards", "Chest", "Free" }
-                ReplicatedStorage:WaitForChild("Assets")
-                    :WaitForChild("Remotes")
-                    :WaitForChild("GET")
-                    :InvokeServer(table.unpack(freeArgs))
-                local retryArgs = { "Functions", "Retry", "Add" }
-                ReplicatedStorage:WaitForChild("Assets")
-                    :WaitForChild("Remotes")
-                    :WaitForChild("GET")
-                    :InvokeServer(table.unpack(retryArgs))
-                return true  
-            end
-        else
-        end
-    else
-    end
-    return false
+function sendMessage(title, description, items)
+    local itemString = table.concat(items, "\n")
+    local data = {
+        content = "",
+        embeds = {{
+            title = title,
+            description = (description .. "\n" .. itemString),
+            color = 4286945 
+        }}
+    }
+    local actual = http:JSONEncode(data)
+
+    local success, response = pcall(function()
+        request({
+            Url = Webhook,
+            Method = "POST",
+            Body = actual,
+            Headers = {
+                ["content-Type"] = "application/json"
+            }
+        })
+    end)
 end
 
-function RewardLoop()
-    local rewardClaimed = false
-    while toggleState do
-        if not rewardClaimed then
-            if AutoAttackRaid_HandleRewards() then
-                rewardClaimed = true
-            end
-        end
-        task.wait(0.1)
-    end
-end
-
-task.spawn(function()
-    while true do
-        if toggleState then
-            MasterLoop()
-        else
-            task.wait(1)
-        end
-        task.wait(0.1)
-    end
-end)
-
-local Togglespearrefill = Tabs.Main:AddToggle("Spear Refill", 
-{
-    Title = "Auto Spear Refill", 
-    Description = "Auto refill your spears",
+local ToggleTracker = Tabs.Extras:AddToggle("Rewards Tracker", {
+    Title = "Rewards Tracker",
+    Description = "Turn on the Rewards Tracker",
     Default = false,
-    Callback = function(state)
-        if state then
-            local function checkAndRefillSpear()
-                local whentofirespearrefill = game:GetService("Players").LocalPlayer.PlayerGui.Interface.HUD.Main.Top.Spears.Spears.Text
-                if string.find(whentofirespearrefill, "0") and not spearHasFired then
-                    local args = {
-                        [1] = "Spears",
-                        [2] = "Full_Reload",
-                        [3] = "Right",
-                        [4] = workspace:WaitForChild("Unclimbable"):WaitForChild("Reloads"):WaitForChild("GasTanks"):WaitForChild("Refill")
-                    }
-                    game:GetService("ReplicatedStorage"):WaitForChild("Assets"):WaitForChild("Remotes"):WaitForChild("POST"):FireServer(unpack(args))
+    Callback = function(Value)
+        local hasSentItems = false
 
-                    args = {
+        while Value do
+            if Webhook == "" then
+                Fluent:Notify({
+                    Title = "Enter a webhook to use Rewards Tracker",
+                    Content = "Please Enter a webhook in the script",
+                    SubContent = "Thank you", 
+                    Duration = 5 
+                })
+                return 
+            end
+
+            local startgui = LocalPlayer:WaitForChild("PlayerGui")
+            local interface = startgui:WaitForChild("Interface")
+            local stepone = interface:WaitForChild("Rewards")
+            local steptwo = stepone:WaitForChild("Main")
+            local stepthree = steptwo:WaitForChild("Info")
+            local stepfour = stepthree:WaitForChild("Main")
+            local stepfive = stepfour:WaitForChild("Items")
+
+            local statsFolder = stepfour:WaitForChild("Stats")
+
+            local slay = ReplicatedStorage:WaitForChild("Objectives"):WaitForChild("Stall_Time")
+
+            local value = slay.Value
+            local requirement = slay:GetAttribute("Requirement")
+
+            if value and requirement and value >= requirement and not hasSentItems then
+                task.wait(1)
+                local itemsList = {}
+                if stepfive then
+                    for _, item in pairs(stepfive:GetChildren()) do
+                        if item.Name ~= "Grid" then
+                            local quantity = item:FindFirstChild("Main") and item.Main:FindFirstChild("Inner") and item.Main.Inner:FindFirstChild("Quantity") and item.Main.Inner.Quantity.Text or "unknown"
+                            local itemName = item.Name:gsub("_", " ") 
+                            table.insert(itemsList, itemName .. ": " .. quantity)
+                        end
+                    end
+                end
+
+                local statsList = {}
+                for _, stat in pairs(statsFolder:GetChildren()) do
+                    if stat.Name ~= "List" then 
+                        local statName = stat.Name:gsub("_", " ")
+                        local statAmount = stat:FindFirstChild("Amount") and stat.Amount.Text or "unknown"
+                        table.insert(statsList, statName .. ": " .. statAmount)
+                    end
+                end
+
+                local specialRewards = {}
+                for _, item in pairs(itemsList) do
+                    if string.find(item, "Serum") or string.find(item, "Secret Perk") then
+                        table.insert(specialRewards, item)
+                    end
+                end
+
+                if #specialRewards == 0 then
+                    table.insert(specialRewards, "No Special Rewards")
+                end
+
+                local combinedList = {}
+                table.insert(combinedList, "**Items:**")
+                for _, item in pairs(itemsList) do
+                    table.insert(combinedList, item)
+                end
+
+                table.insert(combinedList, "\n**Statistics:**")
+                for _, stat in pairs(statsList) do
+                    table.insert(combinedList, stat)
+                end
+
+                table.insert(combinedList, "\n**Special Rewards:**")
+                for _, specialReward in pairs(specialRewards) do
+                    table.insert(combinedList, specialReward)
+                end
+
+                local playerName = LocalPlayer.Name
+                table.insert(combinedList, "\n**Player:**\n" .. playerName)
+
+                sendMessage("Rewards Tracker", "", combinedList)
+
+                hasSentItems = true
+
+if #specialRewards > 0 and specialRewards[1] ~= "No Special Rewards" then
+    local pingMessage = "<@" .. discordID .. ">, you have received a special reward!"
+
+    sendPlainTextMessage(pingMessage)
+end
+
+
+            end
+            task.wait(0.5)
+        end
+    end
+})
+
+local MissionWait = 0.1
+
+local Toggleopfarm = Tabs.Main:AddToggle("Titan Ripper AutoFarm", {
+    Title = "Titan Ripper Autofarm",
+    Description = "Drill thrust and Torrential steel or let it rip in slot 1 and 2",
+    Default = false,
+    Callback = function(OPAUTOFARM)
+        local runService = game:GetService("RunService")
+        local Players = game:GetService("Players")
+        local workspace = game:GetService("Workspace")
+        local VIP = game:GetService("VirtualInputManager")
+        local ReplicatedStorage = game:GetService("ReplicatedStorage")
+        local player = Players.LocalPlayer
+        local character = player.Character or player.CharacterAdded:Wait()
+        local rootPart = character:WaitForChild("HumanoidRootPart")
+
+        local autofarmActive = false
+        local retryCompleted = false
+
+
+        local function cleanup()
+            if getgenv().stopAutofarm then
+                getgenv().stopAutofarm()
+            end
+        end
+
+        if OPAUTOFARM then
+        
+            local bodyPosition = Instance.new("BodyPosition")
+            bodyPosition.Parent = rootPart
+            bodyPosition.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+            bodyPosition.D = 500
+            bodyPosition.P = 5000
+
+            local bodyGyro = Instance.new("BodyGyro")
+            bodyGyro.Parent = rootPart
+            bodyGyro.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+            bodyGyro.P = 2500
+
+            
+            local startPos = rootPart.Position + Vector3.new(0, 500, 0)
+            bodyPosition.Position = startPos
+
+            runService.RenderStepped:Connect(function()
+                bodyPosition.Position = startPos
+                bodyGyro.CFrame = rootPart.CFrame
+            end)
+
+
+            autofarmActive = true
+            retryCompleted = false
+
+            
+           
+local function autofarm()
+    task.wait(MissionWait) 
+
+
+    VIP:SendKeyEvent(true, Enum.KeyCode.One, false, game)
+    task.wait(0.1)
+    VIP:SendKeyEvent(false, Enum.KeyCode.One, false, game)
+
+    local Thrust = character:FindFirstChild("Thrust")
+    if Thrust then
+        Thrust.Size = Vector3.new(1999, 1999, 1999)
+        Thrust.CanCollide = false
+    end
+
+    task.wait(3)
+
+    VIP:SendKeyEvent(true, Enum.KeyCode.Two, false, game)
+    task.wait(0.1)
+    VIP:SendKeyEvent(false, Enum.KeyCode.Two, false, game)
+
+    local Steel = character:FindFirstChild("Steel")
+    if Steel then
+        Steel.Size = Vector3.new(1999, 1999, 1999)
+        Steel.CanCollide = false
+    end
+
+ 
+    coroutine.wrap(function()
+        fireSkillX(Enum.KeyCode.One, "Skill_1")
+    end)()
+    coroutine.wrap(function()
+        fireSkillX(Enum.KeyCode.Two, "Skill_2")
+    end)()
+
+   
+    while autofarmActive and not retryCompleted do
+        task.wait(0.9)
+
+        for _, titan in ipairs(workspace.Titans:GetChildren()) do
+            local Hitboxes = titan:FindFirstChild("Hitboxes")
+            local Hit = Hitboxes and Hit:FindFirstChild("Hit")
+            local Nape = Hit and Hit:FindFirstChild("Nape")
+
+            if Nape then
+                Nape.Size = Vector3.new(250, 250, 250)
+                local frontOffset = rootPart.CFrame.LookVector * 5
+                Nape.Position = rootPart.Position + frontOffset
+                Nape.Anchored = true
+            end
+        end
+
+     
+        local Slay = ReplicatedStorage.Objectives:WaitForChild("Stall_Time")
+        local requirement = Slay:GetAttribute("Requirement")
+        while Slay.Value ~= requirement do
+            task.wait(0.1)
+        end
+
+
+        local args = {
+            [1] = "Functions",
+            [2] = "Retry",
+            [3] = "Add"
+        }
+        ReplicatedStorage:WaitForChild("Assets"):WaitForChild("Remotes"):WaitForChild("GET"):InvokeServer(unpack(args))
+        onMissionComplete()
+        retryCompleted = true
+    end
+end
+
+
+            
+            local function fireSkillX(keyCode, hotbarName)
+                while autofarmActive and not retryCompleted do
+                    local success = pcall(function()
+                        local hotbar = player.PlayerGui.Interface.HUD.Main.Top.Hotbar
+                        local skill = hotbar:FindFirstChild(hotbarName)
+                        local cooldown = skill and skill:FindFirstChild("Cooldown")
+                        if cooldown and not cooldown.Visible then
+                            VIP:SendKeyEvent(true, keyCode, false, game)
+                        end
+                    end)
+                    if not success then break end
+                    task.wait(0.5)
+                end
+            end
+
+        
+            local function startCoroutine(func)
+                local co = coroutine.create(func)
+                coroutine.resume(co)
+                return co
+            end
+
+            startCoroutine(autofarm)
+     
+            spawn(function()
+                while autofarmActive do
+                    task.wait(10)
+                end
+            end)
+
+            
+            getgenv().stopAutofarm = function()
+                autofarmActive = false
+                retryCompleted = false
+            end
+        else
+            cleanup()
+        end
+    end
+})
+
+local function MissionFarm_Run()
+    task.wait(0.1) 
+
+    while toggleState do
+        local titansFolder = Workspace:FindFirstChild("Titans")
+        if titansFolder then
+            local targetNapes = {}
+
+            for _, titan in ipairs(titansFolder:GetChildren()) do
+                if not titan:FindFirstChild("Dead") then
+                    local hitboxes = titan:FindFirstChild("Hitboxes")
+                    local hit = hitboxes and hitboxes:FindFirstChild("Hit")
+                    local nape = hit and hit:FindFirstChild("Nape")
+                    
+                    if nape and nape:IsA("BasePart") then
+                        table.insert(targetNapes, nape.Position)
+                    end
+                end
+            end
+
+            if #targetNapes > 0 then
+                local ammo = AutoAttackRaid_GetRemainingAmmo()
+                if ammo > 0 then
+                    ReplicatedStorage.Assets.Remotes.GET:InvokeServer("Spears", "S_Fire", tostring(ammo))
+                    print("[MissionFarm] Fired spear. Ammo left:", ammo)
+                    task.wait(0.1)
+
+                    for _, pos in ipairs(targetNapes) do
+                        ReplicatedStorage.Assets.Remotes.POST:FireServer("Spears", "S_Explode", pos, 0.11289310455322266, 777.47021484375)
+                    end
+
+                    print("[MissionFarm] Exploded at", #targetNapes, "napes.")
+                else
+                    print("[MissionFarm] No ammo!")
+                end
+            else
+                print("[MissionFarm] No living titans found.")
+            end
+        end
+
+        task.wait(1) 
+    end
+end
+
+local ToggleInfiniteSpears = Tabs.Extras:AddToggle("InfiniteSpears", {
+    Title = "Infinite Spears",
+    Description = "rgnj",
+    Default = false,
+    Callback = function(enabled)
+        local run = true
+
+        
+        getgenv().stopInfiniteSpears = function()
+            run = false
+        end
+
+        if enabled then
+            run = true
+            task.spawn(function()
+                while run do
+                    task.wait(0.1)
+                    local args = {
                         [1] = "Spears",
                         [2] = "Full_Reload",
                         [3] = "Left",
                         [4] = workspace:WaitForChild("Unclimbable"):WaitForChild("Reloads"):WaitForChild("GasTanks"):WaitForChild("Refill")
                     }
                     game:GetService("ReplicatedStorage"):WaitForChild("Assets"):WaitForChild("Remotes"):WaitForChild("POST"):FireServer(unpack(args))
-                    
-                    spearHasFired = true
-                end
-            end
-
-            local spearConnection
-            spearConnection = game:GetService("Players").LocalPlayer.PlayerGui.Interface.HUD.Main.Top.Spears.Spears:GetPropertyChangedSignal("Text"):Connect(function()
-                local whentofirespearrefill = game:GetService("Players").LocalPlayer.PlayerGui.Interface.HUD.Main.Top.Spears.Spears.Text
-                   if string.find(whentofirespearrefill, "0") then
-
-                    checkAndRefillSpear()
-                else
-                    spearHasFired = false 
                 end
             end)
-
-            checkAndRefillSpear()
-        end 
-    end 
+        else
+            if getgenv().stopInfiniteSpears then
+                getgenv().stopInfiniteSpears()
+            end
+        end
+    end
 })
+
+
+local Toggle = Tabs.Main:AddToggle("SpearMissionFarmToggle", {
+    Title = "Spear Mission Farm",
+    Description = ".",
+    Default = false,
+    Callback = function(state)
+        toggleState = state
+        if state then
+            print("[Toggle] Mission farm activated!")
+
+            
+            local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+            local rootPart = character:WaitForChild("HumanoidRootPart")
+            local targetPos = rootPart.Position + Vector3.new(0, 500, 0)
+
+            local bodyPosition = Instance.new("BodyPosition")
+            bodyPosition.Parent = rootPart
+            bodyPosition.Position = targetPos
+            bodyPosition.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+            bodyPosition.D = 50
+            bodyPosition.P = 50
+
+            local bodyGyro = Instance.new("BodyGyro")
+            bodyGyro.Parent = rootPart
+            bodyGyro.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+            bodyGyro.P = 50
+
+            print(string.format("[Toggle] Hovering player to (%.2f, %.2f, %.2f)", targetPos.X, targetPos.Y, targetPos.Z))
+
+
+            task.spawn(MissionFarm_Run)
+            task.spawn(WaitForSlayThenAdd)
+        else
+            print("[Toggle] Mission farm deactivated.")
+        end
+    end
+})
+end
+
 SaveManager:LoadAutoloadConfig()
+
+
+local replicatedStorage = game:GetService("ReplicatedStorage")
+local objectives = replicatedStorage:WaitForChild("Objectives")
+
+local Slay = objectives:FindFirstChild("Stall_Time")
+local requirement = Slay:GetAttribute("Requirement")
+
+  while Slay.Value ~= requirement do
+        task.wait(0.1)
+	
+    end
+
+	local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local args = {
+        "Functions",
+        "Retry",
+        "Add"
+    }
+    ReplicatedStorage
+        :WaitForChild("Assets")
+        :WaitForChild("Remotes")
+        :WaitForChild("GET")
+        :InvokeServer(unpack(args))
+
+		
+
+
