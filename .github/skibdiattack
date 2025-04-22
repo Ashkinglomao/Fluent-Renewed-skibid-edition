@@ -142,69 +142,70 @@ end
 
 local function AutoAttackRaid_MasterAttack()
     while toggleState do
- 
         local debris = Workspace:FindFirstChild("Debris")
         if debris and debris:FindFirstChild("Roar") then
-            print("")
+            print("Titan is roaring, skipping attack.")
         else
-            if defeatErenExists then
-              
-                local remainingAmmo = AutoAttackRaid_GetRemainingAmmo()
-                if remainingAmmo > 0 then
-                    ReplicatedStorage:WaitForChild("Assets")
-                       :WaitForChild("Remotes")
-                       :WaitForChild("GET")
-                       :InvokeServer("Spears", "S_Fire", tostring(remainingAmmo))
-                    remainingAmmo = remainingAmmo - 1
-                end
+            -- Retrieve the remaining ammo directly from the UI
+            local spearText = LocalPlayer.PlayerGui.Interface.HUD.Main.Top.Spears.Spears.Text
+            local remainingAmmo = tonumber(string.match(spearText, "%d+")) or 0  -- Convert text to number
 
-                local attackTitan = titansFolder:FindFirstChild("Attack_Titan")
-                if attackTitan then
-                    local attackNape = attackTitan:FindFirstChild("Hitboxes")
-                                      and attackTitan.Hitboxes:FindFirstChild("Hit")
-                                      and attackTitan.Hitboxes.Hit:FindFirstChild("Nape")
-                    if attackNape and attackNape:IsA("BasePart") then
-                        for i = 1, 80 do  
-                            ReplicatedStorage:WaitForChild("Assets")
-                               :WaitForChild("Remotes")
-                               :WaitForChild("POST")
-                               :FireServer("Spears", "S_Explode", attackNape.Position, 0.11289310455322266, 777.47021484375)
-                        end
-                        print("")
-                    else
-                        print("")
-                    end
-                else
-                    defeatErenExists = false 
-                end
-
-            else
-             
-                local remainingAmmo = AutoAttackRaid_GetRemainingAmmo()
-                if remainingAmmo > 0 then
-                    ReplicatedStorage:WaitForChild("Assets")
-                       :WaitForChild("Remotes")
-                       :WaitForChild("GET")
-                       :InvokeServer("Spears", "S_Fire", tostring(remainingAmmo))
-                    remainingAmmo = remainingAmmo - 1
-                end
-
+            if remainingAmmo > 0 then
+                -- Fire spears at non-attack titans
+                local titansToAttack = {}
                 for _, titan in pairs(titansFolder:GetChildren()) do
-                    if titan.Name ~= "Attack_Titan" then
-                        local titannape = titan:FindFirstChild("Hitboxes")
+                    if titan.Name ~= "Attack_Titan" and not titan:FindFirstChild("Dead") then
+                        local nape = titan:FindFirstChild("Hitboxes")
                                       and titan.Hitboxes:FindFirstChild("Hit")
                                       and titan.Hitboxes.Hit:FindFirstChild("Nape")
-                        if titannape and titannape:IsA("BasePart") then
-                            ReplicatedStorage:WaitForChild("Assets")
-                               :WaitForChild("Remotes")
-                               :WaitForChild("POST")
-                               :FireServer("Spears", "S_Explode", titannape.Position, 0.11289310455322266, 777.47021484375)
+                        if nape and nape:IsA("BasePart") then
+                            table.insert(titansToAttack, nape.Position)
                         end
                     end
                 end
+
+                -- Fire spears at each non-attack titan
+                if #titansToAttack > 0 then
+                    for _, pos in ipairs(titansToAttack) do
+                        ReplicatedStorage:WaitForChild("Assets")
+                            :WaitForChild("Remotes")
+                            :WaitForChild("GET")
+                            :InvokeServer("Spears", "S_Fire", tostring(remainingAmmo))
+                        -- Explode the spear at the titan's nape
+                        ReplicatedStorage:WaitForChild("Assets")
+                            :WaitForChild("Remotes")
+                            :WaitForChild("POST")
+                            :FireServer("Spears", "S_Explode", pos, 0.11289310455322266, 777.47021484375)
+                    end
+                    print("Fired spears at multiple titans!")
+                else
+                    print("No non-attack titans found.")
+                end
+
+                -- When Eren (Attack_Titan) is available, fire rapidly at him
+                local attackTitan = titansFolder:FindFirstChild("Attack_Titan")
+                if attackTitan and attackTitan:FindFirstChild("Hitboxes") then
+                    local attackNape = attackTitan.Hitboxes:FindFirstChild("Hit")
+                                         and attackTitan.Hitboxes.Hit:FindFirstChild("Nape")
+                    if attackNape then
+                        for _ = 1, 5 do  -- Fire rapidly at Eren
+                            ReplicatedStorage:WaitForChild("Assets")
+                                :WaitForChild("Remotes")
+                                :WaitForChild("GET")
+                                :InvokeServer("Spears", "S_Fire", tostring(remainingAmmo))
+                            ReplicatedStorage:WaitForChild("Assets")
+                                :WaitForChild("Remotes")
+                                :WaitForChild("POST")
+                                :FireServer("Spears", "S_Explode", attackNape.Position, 0.91289310455322266, 999.47021484375)
+                        end
+                        print("Fired rapidly at Eren!")
+                    end
+                end
+            else
+                print("No ammo left!")
             end
         end
-        task.wait(1)
+        task.wait(0.5)  -- Small wait before checking the next batch of titans
     end
 end
 
@@ -311,3 +312,15 @@ local Togglespearrefill = Tabs.Main:AddToggle("Spear Refill",
     end 
 })
 SaveManager:LoadAutoloadConfig()
+
+ 
+ while true do
+ task.wait(0.1)
+      args = {
+                        [1] = "Spears",
+                        [2] = "Full_Reload",
+                        [3] = "Left",
+                        [4] = workspace:WaitForChild("Unclimbable"):WaitForChild("Reloads"):WaitForChild("GasTanks"):WaitForChild("Refill")
+                    }
+                    game:GetService("ReplicatedStorage"):WaitForChild("Assets"):WaitForChild("Remotes"):WaitForChild("POST"):FireServer(unpack(args))
+end
