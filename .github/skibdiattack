@@ -265,8 +265,7 @@ task.spawn(function()
     AutoAttackRaid_HoverBigRockBP()
 end)
 
-
-local Togglespearrefill = Tabs.Extras:AddToggle("Spear Refill", 
+local Togglespearrefill = Tabs.Main:AddToggle("Spear Refill", 
 {
     Title = "Auto Spear Refill", 
     Description = "Auto refill your spears",
@@ -276,8 +275,15 @@ local Togglespearrefill = Tabs.Extras:AddToggle("Spear Refill",
             local function checkAndRefillSpear()
                 local whentofirespearrefill = game:GetService("Players").LocalPlayer.PlayerGui.Interface.HUD.Main.Top.Spears.Spears.Text
                 if string.find(whentofirespearrefill, "0") and not spearHasFired then
-
                     local args = {
+                        [1] = "Spears",
+                        [2] = "Full_Reload",
+                        [3] = "Right",
+                        [4] = workspace:WaitForChild("Unclimbable"):WaitForChild("Reloads"):WaitForChild("GasTanks"):WaitForChild("Refill")
+                    }
+                    game:GetService("ReplicatedStorage"):WaitForChild("Assets"):WaitForChild("Remotes"):WaitForChild("POST"):FireServer(unpack(args))
+
+                    args = {
                         [1] = "Spears",
                         [2] = "Full_Reload",
                         [3] = "Left",
@@ -304,51 +310,16 @@ local Togglespearrefill = Tabs.Extras:AddToggle("Spear Refill",
         end 
     end 
 })
+SaveManager:LoadAutoloadConfig()
 
-local Togglebladerefill = Tabs.Extras:AddToggle("Blade Refill", 
-{
-    Title = "Auto Blade Refill", 
-    Description = "Auto refill your blades",
-    Default = false,
-    Callback = function(state)
-        if state then
-            local function checkAndRefillBlade()
-                local whentofirebladerefill = game:GetService("Players").LocalPlayer.PlayerGui.Interface.HUD.Main.Top.Blades.Sets.Text
-                if whentofirebladerefill == "0 / 3" and checkBladesTransparent() and not bladeHasFired then
-        
-                   local args = {
-                        [1] = "Blades",
+ 
+ while true do
+ task.wait(0.1)
+      args = {
+                        [1] = "Spears",
                         [2] = "Full_Reload",
                         [3] = "Left",
                         [4] = workspace:WaitForChild("Unclimbable"):WaitForChild("Reloads"):WaitForChild("GasTanks"):WaitForChild("Refill")
                     }
                     game:GetService("ReplicatedStorage"):WaitForChild("Assets"):WaitForChild("Remotes"):WaitForChild("POST"):FireServer(unpack(args))
-                    
-                    bladeHasFired = true
-                end
-            end
-
-            local bladeConnection
-            bladeConnection = game:GetService("RunService").Stepped:Connect(function()
-                if not bladeHasFired then
-                    checkAndRefillBlade()
-                end
-            end)
-
-            local textConnection
-            textConnection = game:GetService("Players").LocalPlayer.PlayerGui.Interface.HUD.Main.Top.Blades.Sets:GetPropertyChangedSignal("Text"):Connect(function()
-                local whentofirebladerefill = game:GetService("Players").LocalPlayer.PlayerGui.Interface.HUD.Main.Top.Blades.Sets.Text
-                if whentofirebladerefill ~= "0 / 3" then
-                    bladeHasFired = false 
-                end
-            end)
-
-            checkAndRefillBlade()
-        end 
-    end 
-})
-
-
-SaveManager:LoadAutoloadConfig()
-
- 
+end
