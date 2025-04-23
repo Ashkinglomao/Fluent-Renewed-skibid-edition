@@ -689,10 +689,6 @@ local Togglebladerefill = Tabs.Extras:AddToggle("Blade Refill",
     end 
 })
 
-
-SaveManager:LoadAutoloadConfig()
-
-
 local replicatedStorage = game:GetService("ReplicatedStorage")
 local objectives = replicatedStorage:WaitForChild("Objectives")
 
@@ -716,6 +712,7 @@ local args = {
         :WaitForChild("GET")
         :InvokeServer(unpack(args))
 
-		
+		SaveManager:LoadAutoloadConfig()
+
 
 
