@@ -96,10 +96,7 @@ Tabs.Main:AddToggle("AutoAttackRaid", {
 })
 
 
-local function AutoAttackRaid_GetRemainingAmmo()
-    local spearText = LocalPlayer.PlayerGui.Interface.HUD.Main.Top.Spears.Spears.Text
-    return tonumber(string.match(spearText, "%d+")) or 0
-end
+
 
 
 local function AutoAttackRaid_HoverBigRockBP()
@@ -139,6 +136,71 @@ local function AutoAttackRaid_HoverBigRockBP()
     end
 end
 
+local function AutoAttackRaid_GetRemainingAmmo()
+    local character
+    repeat
+        character = workspace.Characters:FindFirstChild("ILIKEYOUASAFRIEND609")
+        task.wait(0.1)
+    until character
+
+    local rightContainer, leftContainer
+    repeat
+        rightContainer = character.Rig_ILIKEYOUASAFRIEND609.RightLowerArm:FindFirstChild("Spears")
+        leftContainer  = character.Rig_ILIKEYOUASAFRIEND609.LeftLowerArm:FindFirstChild("Spears")
+        task.wait(0.1)
+    until rightContainer and leftContainer
+
+    local totalAmmo = #rightContainer:GetChildren() + #leftContainer:GetChildren()
+
+    local usedCount = 0
+    for _, spear in ipairs(rightContainer:GetChildren()) do
+        if spear:GetAttribute("Used") then
+            usedCount = usedCount + 1
+        end
+    end
+    for _, spear in ipairs(leftContainer:GetChildren()) do
+        if spear:GetAttribute("Used") then
+            usedCount = usedCount + 1
+        end
+    end
+
+    local nextShotIndex = usedCount + 1
+    local chosenContainer = (nextShotIndex % 2 == 1) and rightContainer or leftContainer
+    local spearsArray = {}
+    for _, spear in ipairs(chosenContainer:GetChildren()) do
+        table.insert(spearsArray, spear)
+    end
+    table.sort(spearsArray, function(a, b)
+        return tonumber(a.Name) < tonumber(b.Name)
+    end)
+
+    local spearToFire = nil
+    for _, spear in ipairs(spearsArray) do
+        if not spear:GetAttribute("Used") then
+            spearToFire = tonumber(spear.Name)
+            break
+        end
+    end
+
+    if not spearToFire then
+        local altContainer = (chosenContainer == rightContainer) and leftContainer or rightContainer
+        local altSpearsArray = {}
+        for _, spear in ipairs(altContainer:GetChildren()) do
+            table.insert(altSpearsArray, spear)
+        end
+        table.sort(altSpearsArray, function(a, b)
+            return tonumber(a.Name) < tonumber(b.Name)
+        end)
+        for _, spear in ipairs(altSpearsArray) do
+            if not spear:GetAttribute("Used") then
+                spearToFire = tonumber(spear.Name)
+                break
+            end
+        end
+    end
+
+    return spearToFire, totalAmmo
+end
 
 local function AutoAttackRaid_MasterAttack()
     while toggleState do
@@ -146,65 +208,61 @@ local function AutoAttackRaid_MasterAttack()
         if debris and debris:FindFirstChild("Roar") then
             print("Titan is roaring, skipping attack.")
         else
-            
-            local spearText = LocalPlayer.PlayerGui.Interface.HUD.Main.Top.Spears.Spears.Text
-            local remainingAmmo = tonumber(string.match(spearText, "%d+")) or 0  
-
-            if remainingAmmo > 0 then
-                
-                local titansToAttack = {}
-                for _, titan in pairs(titansFolder:GetChildren()) do
-                    if titan.Name ~= "Attack_Titan" and not titan:FindFirstChild("Dead") then
-                        local nape = titan:FindFirstChild("Hitboxes")
-                                      and titan.Hitboxes:FindFirstChild("Hit")
-                                      and titan.Hitboxes.Hit:FindFirstChild("Nape")
-                        if nape and nape:IsA("BasePart") then
-                            table.insert(titansToAttack, nape.Position)
-                        end
-                    end
-                end
-
-             
-                if #titansToAttack > 0 then
-                    for _, pos in ipairs(titansToAttack) do
-                        ReplicatedStorage:WaitForChild("Assets")
-                            :WaitForChild("Remotes")
-                            :WaitForChild("GET")
-                            :InvokeServer("Spears", "S_Fire", tostring(remainingAmmo))
-                    
-                        ReplicatedStorage:WaitForChild("Assets")
-                            :WaitForChild("Remotes")
-                            :WaitForChild("POST")
-                            :FireServer("Spears", "S_Explode", pos, 0.11289310455322266, 777.47021484375)
-                    end
-                    print("Fired spears at multiple titans!")
+            local nextSpear, totalAmmo = AutoAttackRaid_GetRemainingAmmo()
+            if totalAmmo > 0 and nextSpear then
+                local titansFolder = Workspace:FindFirstChild("Titans")
+                if not titansFolder then
+                    print("Titans folder not found!")
                 else
-                    print("No non-attack titans found.")
-                end
-
-                local attackTitan = titansFolder:FindFirstChild("Attack_Titan")
-                if attackTitan and attackTitan:FindFirstChild("Hitboxes") then
-                    local attackNape = attackTitan.Hitboxes:FindFirstChild("Hit")
-                                         and attackTitan.Hitboxes.Hit:FindFirstChild("Nape")
-                    if attackNape then
-                        for _ = 1, 5 do  
-                            ReplicatedStorage:WaitForChild("Assets")
-                                :WaitForChild("Remotes")
-                                :WaitForChild("GET")
-                                :InvokeServer("Spears", "S_Fire", tostring(remainingAmmo))
-                            ReplicatedStorage:WaitForChild("Assets")
-                                :WaitForChild("Remotes")
-                                :WaitForChild("POST")
-                                :FireServer("Spears", "S_Explode", attackNape.Position, 0.91289310455322266, 999.47021484375)
+                    -- Handle normal titans (excluding Attack_Titan)
+                    local titansToAttack = {}
+                    for _, titan in pairs(titansFolder:GetChildren()) do
+                        if titan.Name ~= "Attack_Titan" and not titan:GetAttribute("Dead") then
+                            local hitboxes = titan:FindFirstChild("Hitboxes")
+                            local hit = hitboxes and hitboxes:FindFirstChild("Hit")
+                            local nape = hit and hit:FindFirstChild("Nape")
+                            if nape and nape:IsA("BasePart") then
+                                table.insert(titansToAttack, nape.Position)
+                            end
                         end
-                        print("Fired rapidly at Eren!")
+                    end
+
+                    if #titansToAttack > 0 then
+                        for _, pos in ipairs(titansToAttack) do
+                            ReplicatedStorage.Assets.Remotes.GET:InvokeServer("Spears", "S_Fire", tostring(nextSpear))
+                            ReplicatedStorage.Assets.Remotes.POST:FireServer("Spears", "S_Explode", pos, 0.11289310455322266, 777.47021484375)
+                        end
+                        print("Fired spears at multiple titans! NextSpear:", nextSpear, "Total Ammo:", totalAmmo)
+                        task.wait(1)  -- Wait 1 second for normal titans
+                    else
+                        print("No non-attack titans found.")
+                    end
+
+                    -- Handle Attack Titan ("Attack_Titan")
+                    local attackTitan = titansFolder:FindFirstChild("Attack_Titan")
+                    if attackTitan and attackTitan:FindFirstChild("Hitboxes") then
+                        local attackNape = attackTitan.Hitboxes:FindFirstChild("Hit") and attackTitan.Hitboxes.Hit:FindFirstChild("Nape")
+                        if attackNape then
+                            for i = 1, 5 do
+                                local nextSpearRapid, _ = AutoAttackRaid_GetRemainingAmmo()
+                                if nextSpearRapid then
+                                    ReplicatedStorage.Assets.Remotes.GET:InvokeServer("Spears", "S_Fire", tostring(nextSpearRapid))
+                                    ReplicatedStorage.Assets.Remotes.POST:FireServer("Spears", "S_Explode", attackNape.Position, 0.91289310455322266, 999.47021484375)
+                                else
+                                    print("No valid spear found for rapid fire!")
+                                    break
+                                end
+                                task.wait(0.1)  -- Wait 0.1 seconds between rapid fire shots for the attack titan
+                            end
+                            print("Fired rapidly at Eren!")
+                        end
                     end
                 end
             else
                 print("No ammo left!")
             end
         end
-        task.wait(0.5)  
+        task.wait(0.5)  -- Overall loop delay (optional)
     end
 end
 
@@ -275,13 +333,6 @@ local Togglespearrefill = Tabs.Main:AddToggle("Spear Refill",
             local function checkAndRefillSpear()
                 local whentofirespearrefill = game:GetService("Players").LocalPlayer.PlayerGui.Interface.HUD.Main.Top.Spears.Spears.Text
                 if string.find(whentofirespearrefill, "0") and not spearHasFired then
-                    local args = {
-                        [1] = "Spears",
-                        [2] = "Full_Reload",
-                        [3] = "Right",
-                        [4] = workspace:WaitForChild("Unclimbable"):WaitForChild("Reloads"):WaitForChild("GasTanks"):WaitForChild("Refill")
-                    }
-                    game:GetService("ReplicatedStorage"):WaitForChild("Assets"):WaitForChild("Remotes"):WaitForChild("POST"):FireServer(unpack(args))
 
                     args = {
                         [1] = "Spears",
@@ -313,13 +364,3 @@ local Togglespearrefill = Tabs.Main:AddToggle("Spear Refill",
 SaveManager:LoadAutoloadConfig()
 
  
- while true do
- task.wait(0.1)
-      args = {
-                        [1] = "Spears",
-                        [2] = "Full_Reload",
-                        [3] = "Left",
-                        [4] = workspace:WaitForChild("Unclimbable"):WaitForChild("Reloads"):WaitForChild("GasTanks"):WaitForChild("Refill")
-                    }
-                    game:GetService("ReplicatedStorage"):WaitForChild("Assets"):WaitForChild("Remotes"):WaitForChild("POST"):FireServer(unpack(args))
-end
