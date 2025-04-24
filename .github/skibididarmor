@@ -465,22 +465,29 @@ end
         end
     end
 })
+
 local function AutoAttackRaid_GetRemainingAmmo()
+    local player = game:GetService("Players").LocalPlayer
+
+    -- Wait for the character to load
     local character
-    repeat 
-        character = workspace.Characters:FindFirstChild("ILIKEYOUASAFRIEND609")
+    repeat
+        character = player.Character or player.CharacterAdded:Wait()
         task.wait(0.1)
     until character
 
-    local rightContainer, leftContainer
-    repeat 
-        rightContainer = character.Rig_ILIKEYOUASAFRIEND609.RightLowerArm:FindFirstChild("Spears")
-        leftContainer  = character.Rig_ILIKEYOUASAFRIEND609.LeftLowerArm:FindFirstChild("Spears")
+    -- Wait for the rig and spear containers to exist
+    local rig, rightContainer, leftContainer
+    repeat
+        rig = character:FindFirstChild("Rig_" .. player.Name)
+        rightContainer = rig and rig:FindFirstChild("RightLowerArm") and rig.RightLowerArm:FindFirstChild("Spears")
+        leftContainer  = rig and rig:FindFirstChild("LeftLowerArm") and rig.LeftLowerArm:FindFirstChild("Spears")
         task.wait(0.1)
-    until rightContainer and leftContainer
+    until rig and rightContainer and leftContainer
 
     local totalAmmo = #rightContainer:GetChildren() + #leftContainer:GetChildren()
 
+    -- Count used spears
     local usedCount = 0
     for _, spear in ipairs(rightContainer:GetChildren()) do
         if spear:GetAttribute("Used") then
@@ -493,20 +500,39 @@ local function AutoAttackRaid_GetRemainingAmmo()
         end
     end
 
+   
     local nextShotIndex = usedCount + 1
     local chosenContainer = (nextShotIndex % 2 == 1) and rightContainer or leftContainer
 
-    local spearToFire = nil
+
+    local spearsArray = {}
     for _, spear in ipairs(chosenContainer:GetChildren()) do
+        table.insert(spearsArray, spear)
+    end
+    table.sort(spearsArray, function(a, b)
+        return tonumber(a.Name) < tonumber(b.Name)
+    end)
+
+    
+    local spearToFire = nil
+    for _, spear in ipairs(spearsArray) do
         if not spear:GetAttribute("Used") then
             spearToFire = tonumber(spear.Name)
             break
         end
     end
 
+
     if not spearToFire then
         local altContainer = (chosenContainer == rightContainer) and leftContainer or rightContainer
+        local altSpearsArray = {}
         for _, spear in ipairs(altContainer:GetChildren()) do
+            table.insert(altSpearsArray, spear)
+        end
+        table.sort(altSpearsArray, function(a, b)
+            return tonumber(a.Name) < tonumber(b.Name)
+        end)
+        for _, spear in ipairs(altSpearsArray) do
             if not spear:GetAttribute("Used") then
                 spearToFire = tonumber(spear.Name)
                 break
@@ -706,6 +732,5 @@ local args = {
         :InvokeServer(unpack(args))
 
 		SaveManager:LoadAutoloadConfig()
-
 
 
