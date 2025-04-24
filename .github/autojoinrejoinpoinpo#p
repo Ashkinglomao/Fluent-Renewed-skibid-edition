@@ -1,4 +1,12 @@
+local config = _G.Config -- Retrieve global config
 
+print("Current Difficulty:", config.Difficulty)
+
+for modifier, enabled in pairs(config.Modifiers) do
+    if enabled then
+        print("Enabled Modifier:", modifier)
+    end
+end
 
 --[[
 
