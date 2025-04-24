@@ -1,3 +1,15 @@
+
+
+--[[
+
+local player = game:GetService("Players").LocalPlayer
+if player then
+	player:Kick("NFSW MONKEY BIGGA DETECTED GYATTT")
+end
+
+
+]]
+
 local Players = game:GetService("Players")
 local TeleportService = game:GetService("TeleportService")
 local CoreGui = game:GetService("CoreGui")
@@ -10,27 +22,27 @@ if promptOverlay then
     promptOverlay.ChildAdded:Connect(function(child)
         if child.Name == "ErrorPrompt" then
             print("Detected disconnection or kick! Attempting to rejoin...")
-            task.wait(2) -- Slight delay before rejoining
+            task.wait(2) 
             TeleportService:Teleport(PlaceId)
         end
     end)
 else
 end
-print("E")
+print("")
 
 while not game:IsLoaded() do
 	task.wait(0.1)
 end
-
+if game.PlaceId == 14916516914 then
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Remotes = ReplicatedStorage:WaitForChild("Assets"):WaitForChild("Remotes"):WaitForChild("GET")
 
-local Config = {
-    NoPerks = true,
-    NoSkills = true,
-    NoTalents = true,
+Config = {
+    NoPerks = false,
+    NoSkills = false,
+    NoTalents = false,
     Nightmare = false,
-    Oddball = true,
+    Oddball = false,
     InjuryProne = false,
     ChronicInjuries = false,
     Fog = true,
@@ -78,3 +90,4 @@ end
 createMission() 
 applyModifiers()
 startMission()
+end
