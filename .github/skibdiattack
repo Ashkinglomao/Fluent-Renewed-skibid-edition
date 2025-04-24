@@ -135,23 +135,29 @@ local function AutoAttackRaid_HoverBigRockBP()
         end
     end
 end
-
 local function AutoAttackRaid_GetRemainingAmmo()
+    local player = game:GetService("Players").LocalPlayer
+
+    -- Wait for the character to load
     local character
     repeat
-        character = workspace.Characters:FindFirstChild("ILIKEYOUASAFRIEND609")
+        character = player.Character or player.CharacterAdded:Wait()
         task.wait(0.1)
     until character
 
-    local rightContainer, leftContainer
+    -- Wait for the rig and spear containers to exist
+    local rig, rightContainer, leftContainer
     repeat
-        rightContainer = character.Rig_ILIKEYOUASAFRIEND609.RightLowerArm:FindFirstChild("Spears")
-        leftContainer  = character.Rig_ILIKEYOUASAFRIEND609.LeftLowerArm:FindFirstChild("Spears")
+        rig = character:FindFirstChild("Rig_" .. player.Name)
+        rightContainer = rig and rig:FindFirstChild("RightLowerArm") and rig.RightLowerArm:FindFirstChild("Spears")
+        leftContainer  = rig and rig:FindFirstChild("LeftLowerArm") and rig.LeftLowerArm:FindFirstChild("Spears")
         task.wait(0.1)
-    until rightContainer and leftContainer
+    until rig and rightContainer and leftContainer
 
+    -- Calculate total ammo
     local totalAmmo = #rightContainer:GetChildren() + #leftContainer:GetChildren()
 
+    -- Count used spears
     local usedCount = 0
     for _, spear in ipairs(rightContainer:GetChildren()) do
         if spear:GetAttribute("Used") then
@@ -164,8 +170,11 @@ local function AutoAttackRaid_GetRemainingAmmo()
         end
     end
 
+    -- Determine the next spear to fire
     local nextShotIndex = usedCount + 1
     local chosenContainer = (nextShotIndex % 2 == 1) and rightContainer or leftContainer
+
+    -- Sort spears by name
     local spearsArray = {}
     for _, spear in ipairs(chosenContainer:GetChildren()) do
         table.insert(spearsArray, spear)
@@ -174,6 +183,7 @@ local function AutoAttackRaid_GetRemainingAmmo()
         return tonumber(a.Name) < tonumber(b.Name)
     end)
 
+    -- Find next available spear
     local spearToFire = nil
     for _, spear in ipairs(spearsArray) do
         if not spear:GetAttribute("Used") then
@@ -182,6 +192,7 @@ local function AutoAttackRaid_GetRemainingAmmo()
         end
     end
 
+    -- Fallback to alternate container if no available spear was found
     if not spearToFire then
         local altContainer = (chosenContainer == rightContainer) and leftContainer or rightContainer
         local altSpearsArray = {}
