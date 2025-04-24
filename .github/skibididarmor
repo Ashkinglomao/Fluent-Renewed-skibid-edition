@@ -131,28 +131,19 @@ end
 
 
 local function setMissionCount(count)
-    writefile(missionFile, tostring(count))
+   print("ej")
 end
 
 
 local function teleportToLobby()
     print("[Teleport] 10 missions done! Going to lobby.")
-    setMissionCount(0) 
-    TeleportService:Teleport(placeId, player)
 end
 
 
 local autoTrackEnabled = false
 
 local function onMissionComplete()
-    if not autoTrackEnabled then return end
-    local count = getMissionCount() + 1
-    print("[Mission] Completed mission", count)
-    if count >= 10 then
-        teleportToLobby()
-    else
-        setMissionCount(count)
-    end
+  print("")
 end
 
 
