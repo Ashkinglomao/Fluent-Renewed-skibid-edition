@@ -5,16 +5,21 @@ local PlaceId = 14916516914
 
 local function AttemptRejoin(retryCount)
     retryCount = retryCount or 0
-    if retryCount < 3 then  -- Limit retries to prevent looping indefinitely
+    if retryCount < 5 then
         print("Rejoining attempt:", retryCount + 1)
-        task.wait(2)
-        TeleportService:Teleport(PlaceId)
+        task.wait(5)
+        local success, errorMessage = pcall(function()
+            TeleportService:Teleport(PlaceId)
+        end)
+        if not success then
+            print("Rejoin failed:", errorMessage)
+            AttemptRejoin(retryCount + 1)
+        end
     else
         print("Failed to rejoin after multiple attempts.")
     end
 end
 
--- Detecting ErrorPrompt in CoreGui
 repeat task.wait() until CoreGui:FindFirstChild("RobloxPromptGui")
 
 local promptOverlay = CoreGui.RobloxPromptGui:FindFirstChild("promptOverlay")
@@ -27,7 +32,6 @@ if promptOverlay then
     end)
 end
 
--- Alternative: Detecting player removal (for a broader range of disconnects)
 Players.PlayerRemoving:Connect(function(player)
     if player == Players.LocalPlayer then
         print("Detected player removal. Attempting to rejoin...")
