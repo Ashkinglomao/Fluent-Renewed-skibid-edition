@@ -1,7 +1,7 @@
 local Players = game:GetService("Players")
 local TeleportService = game:GetService("TeleportService")
 local CoreGui = game:GetService("CoreGui")
-local PlaceId = 14916516914
+local PlaceId = game.PlaceId
 
 local function AttemptRejoin(retryCount)
     retryCount = retryCount or 0
