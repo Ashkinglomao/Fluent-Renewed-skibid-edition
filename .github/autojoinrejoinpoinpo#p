@@ -1,28 +1,20 @@
-local config = _G.Config -- Retrieve global config
-
-print("Current Difficulty:", config.Difficulty)
-
-for modifier, enabled in pairs(config.Modifiers) do
-    if enabled then
-        print("Enabled Modifier:", modifier)
-    end
-end
-
---[[
-
-local player = game:GetService("Players").LocalPlayer
-if player then
-	player:Kick("NFSW MONKEY BIGGA DETECTED GYATTT")
-end
-
-
-]]
-
 local Players = game:GetService("Players")
 local TeleportService = game:GetService("TeleportService")
 local CoreGui = game:GetService("CoreGui")
 local PlaceId = 14916516914
 
+local function AttemptRejoin(retryCount)
+    retryCount = retryCount or 0
+    if retryCount < 3 then  -- Limit retries to prevent looping indefinitely
+        print("Rejoining attempt:", retryCount + 1)
+        task.wait(2)
+        TeleportService:Teleport(PlaceId)
+    else
+        print("Failed to rejoin after multiple attempts.")
+    end
+end
+
+-- Detecting ErrorPrompt in CoreGui
 repeat task.wait() until CoreGui:FindFirstChild("RobloxPromptGui")
 
 local promptOverlay = CoreGui.RobloxPromptGui:FindFirstChild("promptOverlay")
@@ -30,72 +22,15 @@ if promptOverlay then
     promptOverlay.ChildAdded:Connect(function(child)
         if child.Name == "ErrorPrompt" then
             print("Detected disconnection or kick! Attempting to rejoin...")
-            task.wait(2) 
-            TeleportService:Teleport(PlaceId)
+            AttemptRejoin(1)
         end
     end)
-else
-end
-print("")
-
-while not game:IsLoaded() do
-	task.wait(0.1)
-end
-if game.PlaceId == 14916516914 then
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Remotes = ReplicatedStorage:WaitForChild("Assets"):WaitForChild("Remotes"):WaitForChild("GET")
-
-Config = {
-    NoPerks = false,
-    NoSkills = false,
-    NoTalents = false,
-    Nightmare = false,
-    Oddball = false,
-    InjuryProne = false,
-    ChronicInjuries = false,
-    Fog = true,
-    GlassCannon = true,
-    TimeTrial = true
-}
-
-local function createMission()
-    local args = {
-        "S_Missions",
-        "Create",
-        {
-            Difficulty = "Aberrant",
-            Type = "Missions",
-            Name = "Shiganshina",
-            Objective = "Skirmish"
-        }
-    }
-    Remotes:InvokeServer(unpack(args))
-    print("Mission created: Shiganshina (Aberrant Difficulty)")
 end
 
-local function applyModifiers()
-    for modifier, enabled in pairs(Config) do
-        task.wait(1) 
-
-        if enabled then
-            local args = {"S_Missions", "Modify", modifier}
-            Remotes:InvokeServer(unpack(args))
-            print("Applied modifier: " .. modifier)
-        else
-            print("Skipped modifier: " .. modifier)
-        end
+-- Alternative: Detecting player removal (for a broader range of disconnects)
+Players.PlayerRemoving:Connect(function(player)
+    if player == Players.LocalPlayer then
+        print("Detected player removal. Attempting to rejoin...")
+        AttemptRejoin(1)
     end
-end
-
-local function startMission()
-    print("All modifiers processed. Starting mission...")
-    task.wait(1) 
-    local args = {"S_Missions", "Start"}
-    Remotes:InvokeServer(unpack(args))
-    print("Mission started!")
-end
-
-createMission() 
-applyModifiers()
-startMission()
-end
+end)
