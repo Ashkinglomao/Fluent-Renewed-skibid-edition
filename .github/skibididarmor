@@ -82,6 +82,7 @@ local Tabs = {
     Main = Window:AddTab({ Title = "Main", Icon = "" }),
     Extras = Window:AddTab({ Title = "Extras", Icon = "" }),
     Misc = Window:AddTab({ Title = "Misc", Icon = "" }),
+    Misc = Window:AddTab({ Title = "Stockpile", Icon = "" }),
     Discord = Window:AddTab({ Title = "Discord", Icon = "" }),
     Settings = Window:AddTab({ Title = "Settings", Icon = "" }),
 }
@@ -109,6 +110,69 @@ InterfaceManager:BuildInterfaceSection(Tabs.Settings)
 SaveManager:BuildConfigSection(Tabs.Settings)
 
 Window:SelectTab(1)
+
+
+local Tabs = {
+    Main = Window:AddTab({ Title = "Main", Icon = "" }),
+    Extras = Window:AddTab({ Title = "Extras", Icon = "" }),
+    Misc = Window:AddTab({ Title = "Misc", Icon = "" }),
+    Stockpile = Window:AddTab({ Title = "Stockpile", Icon = "" }),
+    Discord = Window:AddTab({ Title = "Discord", Icon = "" }),
+    Settings = Window:AddTab({ Title = "Settings", Icon = "" }),
+}
+
+local args = { "Data", "Copy" }
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local data = ReplicatedStorage
+    :WaitForChild("Assets")
+    :WaitForChild("Remotes")
+    :WaitForChild("GET")
+    :InvokeServer(unpack(args))
+
+local function formatNestedTable(tbl)
+    local content = ""
+    for key, value in pairs(tbl) do
+        if type(value) == "table" then
+            content = content .. key .. ": (Table)\n"
+            for subKey, subValue in pairs(value) do
+                content = content .. "  " .. subKey .. ": " .. tostring(subValue) .. "\n"
+            end
+        else
+            content = content .. key .. ": " .. tostring(value) .. "\n"
+        end
+    end
+    return content
+end
+
+if data and data.Slots and data.Current_Slot then
+    local slotData = data.Slots[data.Current_Slot]
+
+    if slotData and slotData.Currency then
+        for key, value in pairs(slotData.Currency) do
+            Tabs.Stockpile:AddParagraph({
+                Title = "Currency: " .. key,
+                Content = "Amount: " .. tostring(value)
+            })
+        end
+    else
+        print("Currency table is missing or unavailable.")
+    end
+
+    if slotData and slotData.Inventory then
+        for categoryName, categoryItems in pairs(slotData.Inventory) do
+            local content = formatNestedTable(categoryItems)
+            Tabs.Stockpile:AddParagraph({
+                Title = "Inventory: " .. categoryName,
+                Content = content
+            })
+        end
+    else
+        print("Inventory table is missing or unavailable.")
+    end
+else
+    print("Error: Slot data structure is invalid or missing.")
+end
 
 
 local function AutoAttackRaid_GetRemainingAmmo()
