@@ -298,12 +298,12 @@ local function AutoAttackRaid_MasterAttack()
                             ReplicatedStorage.Assets.Remotes.POST:FireServer("Spears", "S_Explode", pos, 0.11289310455322266, 777.47021484375)
                         end
                         print("Fired spears at multiple titans! NextSpear:", nextSpear, "Total Ammo:", totalAmmo)
-                        task.wait(1)  -- Wait 1 second for normal titans
+                        task.wait(1)  
                     else
                         print("No non-attack titans found.")
                     end
 
-                    -- Handle Attack Titan ("Attack_Titan")
+                 
                     local attackTitan = titansFolder:FindFirstChild("Attack_Titan")
                     if attackTitan and attackTitan:FindFirstChild("Hitboxes") then
                         local attackNape = attackTitan.Hitboxes:FindFirstChild("Hit") and attackTitan.Hitboxes.Hit:FindFirstChild("Nape")
