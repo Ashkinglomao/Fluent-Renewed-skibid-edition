@@ -110,7 +110,7 @@ local DifficultyDropdown = Tabs.Main:AddDropdown("DifficultyDropdown", {
     Default = "Easy",
 })
 
-local Toggle = Tabs.Main:AddToggle("MissionToggle", {
+local Toggle = Tabs.Main:AddToggle("AutoStart", {
     Title = "Auto Mission",
     Default = false,
     Callback = function(enabled)
@@ -130,14 +130,10 @@ local Toggle = Tabs.Main:AddToggle("MissionToggle", {
                 }
             }
             
-            local startArgs = { "S_Missions", "Start" }
-            
-            task.wait(0.1)
-            game:GetService("ReplicatedStorage"):WaitForChild("Assets"):WaitForChild("Remotes"):WaitForChild("GET"):InvokeServer(unpack(missionArgs))
-            
             -- Wait a bit to ensure the mission is set up before applying modifiers
             task.wait(0.2)
-
+            game:GetService("ReplicatedStorage"):WaitForChild("Assets"):WaitForChild("Remotes"):WaitForChild("GET"):InvokeServer(unpack(missionArgs))
+            
             -- Apply all selected modifiers
             for _, modifier in ipairs(selectedModifiers) do
                 task.wait(0.1)
@@ -145,7 +141,9 @@ local Toggle = Tabs.Main:AddToggle("MissionToggle", {
                 game:GetService("ReplicatedStorage"):WaitForChild("Assets"):WaitForChild("Remotes"):WaitForChild("GET"):InvokeServer(unpack(args))
             end
             
+            -- Start the mission AFTER applying modifiers
             task.wait(0.2)
+            local startArgs = { "S_Missions", "Start" }
             game:GetService("ReplicatedStorage"):WaitForChild("Assets"):WaitForChild("Remotes"):WaitForChild("GET"):InvokeServer(unpack(startArgs))
 
             print("")
