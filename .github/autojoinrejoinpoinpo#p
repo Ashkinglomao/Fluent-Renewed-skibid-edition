@@ -35,9 +35,16 @@ end
 
 if game.PlaceId == 14916516914 then
 
-local BAKAMONKEY = game:GetService("Players").LocalPlayer.PlayerScripts.Baka
-if BAKAMONKEY then
-    BAKAMONKEY:Destroy()
+local playerScripts = game:GetService("Players").LocalPlayer:FindFirstChild("PlayerScripts")
+if playerScripts then
+    local BAKAMONKEY = playerScripts:FindFirstChild("Baka")
+    if BAKAMONKEY then
+        BAKAMONKEY:Destroy()
+    else
+        print("")
+    end
+else
+    print("")
 end
 
 local replicatedStorage = game:GetService("ReplicatedStorage")
@@ -134,7 +141,7 @@ local Toggle = Tabs.Main:AddToggle("MissionToggle", {
             task.wait(0.2)
             game:GetService("ReplicatedStorage"):WaitForChild("Assets"):WaitForChild("Remotes"):WaitForChild("GET"):InvokeServer(unpack(startArgs))
 
-            print(""))
+            print("")
         else
             print("")
         end
