@@ -97,7 +97,7 @@ local Toggle = Tabs.Main:AddToggle("MissionToggle", {
     Callback = function(enabled)
         if enabled then
             print("Toggle enabled, creating mission with selected modifiers...")
-
+task.wait(5)
             -- Mission setup
             local missionArgs = {
                 "S_Missions",
