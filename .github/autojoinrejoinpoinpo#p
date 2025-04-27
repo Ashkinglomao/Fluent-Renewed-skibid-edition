@@ -35,6 +35,13 @@ end
 
 if game.PlaceId == 14916516914 then
 
+
+while not game:IsLoaded() do
+    wait(1)
+end
+wait(2)
+
+
 local playerScripts = game:GetService("Players").LocalPlayer:FindFirstChild("PlayerScripts")
 if playerScripts then
     local BAKAMONKEY = playerScripts:FindFirstChild("Baka")
