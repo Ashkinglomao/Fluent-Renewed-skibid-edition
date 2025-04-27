@@ -57,7 +57,7 @@ local Tabs = {
 
 
 InterfaceManager:SetFolder("NexusHub")
-SaveManager:SetFolder("NexusHub/settings")
+SaveManager:SetFolder("NexusHub/settingsforautoload")
 
 SaveManager:SetLibrary(Fluent)
 InterfaceManager:SetLibrary(Fluent)
