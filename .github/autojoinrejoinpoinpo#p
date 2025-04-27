@@ -17,7 +17,7 @@ local function AttemptRejoin(retryCount)
             AttemptRejoin(retryCount + 1)
         end
     else
-        print("Failed to rejoin after multiple attempts.")
+        print("")
     end
 end
 
@@ -27,7 +27,7 @@ local promptOverlay = CoreGui.RobloxPromptGui:FindFirstChild("promptOverlay")
 if promptOverlay then
     promptOverlay.ChildAdded:Connect(function(child)
         if child.Name == "ErrorPrompt" then
-            print("Detected disconnection or kick! Attempting to rejoin...")
+            print("")
             AttemptRejoin(1)
         end
     end)
@@ -96,9 +96,10 @@ local Toggle = Tabs.Main:AddToggle("MissionToggle", {
     Default = false,
     Callback = function(enabled)
         if enabled then
-            print("Toggle enabled, creating mission with selected modifiers...")
-task.wait(5)
-            -- Mission setup
+            print("")
+            task.wait(5)
+            
+            -- Mission setup (Create the mission first)
             local missionArgs = {
                 "S_Missions",
                 "Create",
@@ -109,25 +110,32 @@ task.wait(5)
                     Objective = "Skirmish"
                 }
             }
-
+            
             local startArgs = { "S_Missions", "Start" }
-
+            
             task.wait(0.1)
             game:GetService("ReplicatedStorage"):WaitForChild("Assets"):WaitForChild("Remotes"):WaitForChild("GET"):InvokeServer(unpack(missionArgs))
+            
+            -- Wait a bit to ensure the mission is set up before applying modifiers
+            task.wait(0.2)
 
-            -- Apply all selected modifiers with a delay
+            -- Apply all selected modifiers
             for _, modifier in ipairs(selectedModifiers) do
                 task.wait(0.1)
                 local args = { "S_Missions", "Modify", modifier }
                 game:GetService("ReplicatedStorage"):WaitForChild("Assets"):WaitForChild("Remotes"):WaitForChild("GET"):InvokeServer(unpack(args))
             end
-
-            task.wait(0.1)
+            
+            task.wait(0.2)
             game:GetService("ReplicatedStorage"):WaitForChild("Assets"):WaitForChild("Remotes"):WaitForChild("GET"):InvokeServer(unpack(startArgs))
 
-            print("Mission started with difficulty:", DifficultyDropdown.Value, "and modifiers:", table.concat(selectedModifiers, ", "))
+            print(""))
         else
-            print("Toggle disabled, mission creation stopped.")
+            print("")
         end
     end
 })
+
+SaveManager:LoadAutoloadConfig()
+
+end
