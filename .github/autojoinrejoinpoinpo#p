@@ -1,7 +1,8 @@
-local Players = game:GetService("Players")
 local TeleportService = game:GetService("TeleportService")
+local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
-local PlaceId = game.PlaceId
+
+local lobbyPlaceId = 14916516914
 
 local function AttemptRejoin(retryCount)
     retryCount = retryCount or 0
@@ -9,7 +10,7 @@ local function AttemptRejoin(retryCount)
         print("Rejoining attempt:", retryCount + 1)
         task.wait(5)
         local success, errorMessage = pcall(function()
-            TeleportService:Teleport(PlaceId)
+            TeleportService:Teleport(lobbyPlaceId, Players.LocalPlayer) 
         end)
         if not success then
             print("Rejoin failed:", errorMessage)
@@ -32,9 +33,94 @@ if promptOverlay then
     end)
 end
 
-Players.PlayerRemoving:Connect(function(player)
-    if player == Players.LocalPlayer then
-        print("Detected player removal. Attempting to rejoin...")
-        AttemptRejoin(1)
+if game.PlaceId == 14916516914 then
+
+local replicatedStorage = game:GetService("ReplicatedStorage")
+local workspaceService = game:GetService("Workspace")
+local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
+local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
+local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
+
+local Window = Fluent:CreateWindow({
+    Title = "Nexus Hub AoT:R",
+    SubTitle = "by Ash",
+    TabWidth = 160,
+    Size = UDim2.fromOffset(580, 460),
+    Acrylic = true, 
+    Theme = "Darker",
+    MinimizeKey = Enum.KeyCode.LeftControl 
+})
+local Tabs = {
+    Main = Window:AddTab({ Title = "Main", Icon = "" }),
+    Settings = Window:AddTab({ Title = "Settings", Icon = "" }),
+}
+
+
+InterfaceManager:SetFolder("NexusHub")
+SaveManager:SetFolder("NexusHub/settings")
+
+SaveManager:SetLibrary(Fluent)
+InterfaceManager:SetLibrary(Fluent)
+
+InterfaceManager:BuildInterfaceSection(Tabs.Settings)
+SaveManager:BuildConfigSection(Tabs.Settings)
+
+Window:SelectTab(1)
+
+local selectedModifiers = {}
+
+local MultiDropdown = Tabs.Main:AddDropdown("MultiDropdown", {
+    Title = "Mission Modifiers",
+    Description = "Select multiple modifiers.",
+    Values = {
+        "No Perks", "No Skills", "No Talents", "Nightmare", "Oddball",
+        "Injury Prone", "Chronic Injuries", "Fog", "Glass Cannon", "Time Trial"
+    },
+    Multi = true,
+    Default = {"Nightmare", "Fog"}, -- Default selections
+    Callback = function(value)
+        selectedModifiers = value -- Store selected modifiers dynamically
     end
-end)
+})
+
+local Toggle = Tabs.Main:AddToggle("MissionToggle", {
+    Title = "Auto Mission",
+    Default = false,
+    Callback = function(enabled)
+        if enabled then
+            print("Toggle enabled, creating mission with selected modifiers...")
+            
+            -- Mission setup
+            local missionArgs = {
+                "S_Missions",
+                "Create",
+                {
+                    Difficulty = "Aberrant",
+                    Type = "Missions",
+                    Name = "Shiganshina",
+                    Objective = "Skirmish"
+                }
+            }
+
+            local startArgs = {"S_Missions", "Start"}
+
+            task.wait(0.1)
+            game:GetService("ReplicatedStorage"):WaitForChild("Assets"):WaitForChild("Remotes"):WaitForChild("GET"):InvokeServer(unpack(missionArgs))
+
+            -- Apply all selected modifiers with a delay
+            for _, modifier in ipairs(selectedModifiers) do
+                task.wait(0.1)
+                local args = {"S_Missions", "Modify", modifier}
+                game:GetService("ReplicatedStorage"):WaitForChild("Assets"):WaitForChild("Remotes"):WaitForChild("GET"):InvokeServer(unpack(args))
+            end
+
+            task.wait(0.1)
+            game:GetService("ReplicatedStorage"):WaitForChild("Assets"):WaitForChild("Remotes"):WaitForChild("GET"):InvokeServer(unpack(startArgs))
+
+            print("Mission started with modifiers:", table.concat(selectedModifiers, ", "))
+        else
+            print("Toggle disabled, mission creation stopped.")
+        end
+    end
+})
+end
