@@ -77,10 +77,18 @@ local MultiDropdown = Tabs.Main:AddDropdown("MultiDropdown", {
         "Injury Prone", "Chronic Injuries", "Fog", "Glass Cannon", "Time Trial"
     },
     Multi = true,
-    Default = {"Nightmare", "Fog"}, -- Default selections
+    Default = {"Fog"}, -- Default selections
     Callback = function(value)
         selectedModifiers = value -- Store selected modifiers dynamically
     end
+})
+
+local DifficultyDropdown = Tabs.Main:AddDropdown("DifficultyDropdown", {
+    Title = "Mission Difficulty",
+    Description = "Select a difficulty level.",
+    Values = { "Easy", "Normal", "Hard", "Severe", "Aberrant" },
+    Multi = false,
+    Default = "Easy",
 })
 
 local Toggle = Tabs.Main:AddToggle("MissionToggle", {
@@ -89,20 +97,20 @@ local Toggle = Tabs.Main:AddToggle("MissionToggle", {
     Callback = function(enabled)
         if enabled then
             print("Toggle enabled, creating mission with selected modifiers...")
-            
+
             -- Mission setup
             local missionArgs = {
                 "S_Missions",
                 "Create",
                 {
-                    Difficulty = "Aberrant",
+                    Difficulty = DifficultyDropdown.Value, -- Directly use dropdown value
                     Type = "Missions",
                     Name = "Shiganshina",
                     Objective = "Skirmish"
                 }
             }
 
-            local startArgs = {"S_Missions", "Start"}
+            local startArgs = { "S_Missions", "Start" }
 
             task.wait(0.1)
             game:GetService("ReplicatedStorage"):WaitForChild("Assets"):WaitForChild("Remotes"):WaitForChild("GET"):InvokeServer(unpack(missionArgs))
@@ -110,17 +118,16 @@ local Toggle = Tabs.Main:AddToggle("MissionToggle", {
             -- Apply all selected modifiers with a delay
             for _, modifier in ipairs(selectedModifiers) do
                 task.wait(0.1)
-                local args = {"S_Missions", "Modify", modifier}
+                local args = { "S_Missions", "Modify", modifier }
                 game:GetService("ReplicatedStorage"):WaitForChild("Assets"):WaitForChild("Remotes"):WaitForChild("GET"):InvokeServer(unpack(args))
             end
 
             task.wait(0.1)
             game:GetService("ReplicatedStorage"):WaitForChild("Assets"):WaitForChild("Remotes"):WaitForChild("GET"):InvokeServer(unpack(startArgs))
 
-            print("Mission started with modifiers:", table.concat(selectedModifiers, ", "))
+            print("Mission started with difficulty:", DifficultyDropdown.Value, "and modifiers:", table.concat(selectedModifiers, ", "))
         else
             print("Toggle disabled, mission creation stopped.")
         end
     end
 })
-end
