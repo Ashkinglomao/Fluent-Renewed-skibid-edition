@@ -135,11 +135,12 @@ local Toggle = Tabs.Main:AddToggle("AutoStart", {
             game:GetService("ReplicatedStorage"):WaitForChild("Assets"):WaitForChild("Remotes"):WaitForChild("GET"):InvokeServer(unpack(missionArgs))
             
             -- Apply all selected modifiers
-            for _, modifier in ipairs(selectedModifiers) do
-                task.wait(0.1)
-                local args = { "S_Missions", "Modify", modifier }
-                game:GetService("ReplicatedStorage"):WaitForChild("Assets"):WaitForChild("Remotes"):WaitForChild("GET"):InvokeServer(unpack(args))
-            end
+      for _, modifier in ipairs(MultiDropdown.Values) do
+    task.wait(0.1)
+    local args = { "S_Missions", "Modify", modifier }
+    game:GetService("ReplicatedStorage"):WaitForChild("Assets"):WaitForChild("Remotes"):WaitForChild("GET"):InvokeServer(unpack(args))
+end
+
             
             -- Start the mission AFTER applying modifiers
             task.wait(0.2)
