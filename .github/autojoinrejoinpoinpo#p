@@ -35,6 +35,11 @@ end
 
 if game.PlaceId == 14916516914 then
 
+local BAKAMONKEY = game:GetService("Players").LocalPlayer.PlayerScripts.Baka
+if BAKAMONKEY then
+    BAKAMONKEY:Destroy()
+end
+
 local replicatedStorage = game:GetService("ReplicatedStorage")
 local workspaceService = game:GetService("Workspace")
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
