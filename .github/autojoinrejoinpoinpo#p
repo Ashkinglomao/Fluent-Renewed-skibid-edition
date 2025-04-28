@@ -92,15 +92,17 @@ local MultiDropdown = Tabs.Main:AddDropdown("MultiDropdown", {
     Title = "Mission Modifiers",
     Description = "Select multiple modifiers.",
     Values = {
-        "No Perks", "No Skills", "No Talents", "Nightmare", "Oddball",
+        "Nightmare", "Oddball",
         "Injury Prone", "Chronic Injuries", "Fog", "Glass Cannon", "Time Trial"
     },
     Multi = true,
-    Default = {"Fog"}, -- Default selections
+    Default = {"Fog"},
     Callback = function(value)
-        selectedModifiers = value -- Store selected modifiers dynamically
+        selectedModifiers = value or {} -- Make sure it's always safe
+        print("User selected modifiers:", selectedModifiers)
     end
 })
+
 
 local DifficultyDropdown = Tabs.Main:AddDropdown("DifficultyDropdown", {
     Title = "Mission Difficulty",
@@ -135,11 +137,19 @@ local Toggle = Tabs.Main:AddToggle("AutoStart", {
             game:GetService("ReplicatedStorage"):WaitForChild("Assets"):WaitForChild("Remotes"):WaitForChild("GET"):InvokeServer(unpack(missionArgs))
             
             -- Apply all selected modifiers
-      for _, modifier in ipairs(MultiDropdown.Values) do
-    task.wait(0.1)
-    local args = { "S_Missions", "Modify", modifier }
-    game:GetService("ReplicatedStorage"):WaitForChild("Assets"):WaitForChild("Remotes"):WaitForChild("GET"):InvokeServer(unpack(args))
+if selectedModifiers and typeof(selectedModifiers) == "table" then
+    for modifier, enabled in pairs(selectedModifiers) do
+        if enabled then
+            print("Applying Modifier:", modifier)
+            local args = { "S_Missions", "Modify", modifier }
+            game:GetService("ReplicatedStorage"):WaitForChild("Assets"):WaitForChild("Remotes"):WaitForChild("GET"):InvokeServer(unpack(args))
+            task.wait(0.25)
+        end
+    end
+else
+    warn("No modifiers selected!")
 end
+
 
             
             -- Start the mission AFTER applying modifiers
@@ -153,7 +163,3 @@ end
         end
     end
 })
-
-SaveManager:LoadAutoloadConfig()
-
-end
