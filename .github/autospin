@@ -201,18 +201,18 @@ elseif game.PlaceId == 13379208636 then
     })
 
     Tabs.Family:AddButton({
-        Title = "Stop on Secret",
-        Description = "Spin until you get a Secret family (PRESS AUTOSPIN FIRST)",
+        Title = "Stop on Mythical",
+        Description = "Spin until you get a Mythical family (PRESS AUTOSPIN FIRST)",
         Callback = function()
-            startSpinning({"%(Secret%)"})
+            startSpinning({"%(Mythical%)"})
         end
     })
 
     Tabs.Family:AddButton({
-        Title = "Stop on Secret and Legendary",
-        Description = "Spin until you get a Secret or Legendary family (PRESS AUTOSPIN FIRST)",
+        Title = "Stop on Mythical and Legendary",
+        Description = "Spin until you get a Mythical or Legendary family (PRESS AUTOSPIN FIRST)",
         Callback = function()
-            startSpinning({"%(Secret%)", "%(Legendary%)"})
+            startSpinning({"%(Mythical%)", "%(Legendary%)"})
         end
     })
 
@@ -226,9 +226,9 @@ elseif game.PlaceId == 13379208636 then
 
     Tabs.Family:AddButton({
         Title = "Stop on All 3",
-        Description = "Spin until you get a Secret, Legendary, or Epic family (PRESS AUTOSPIN FIRST)",
+        Description = "Spin until you get a Mythical, Legendary, or Epic family (PRESS AUTOSPIN FIRST)",
         Callback = function()
-            startSpinning({"%(Secret%)", "%(Legendary%)", "%(Epic%)"})
+            startSpinning({"%(Mythical%)", "%(Legendary%)", "%(Epic%)"})
         end
     })
 end
