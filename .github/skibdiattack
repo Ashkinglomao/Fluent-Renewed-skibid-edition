@@ -1,18 +1,11 @@
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Players = game:GetService("Players")
-local Workspace = game:GetService("Workspace")
-local TweenService = game:GetService("TweenService")
-local LocalPlayer = Players.LocalPlayer
-local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-local rootPart = character:WaitForChild("HumanoidRootPart")
-local titansFolder = Workspace:WaitForChild("Titans")
-local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
-local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
-getgenv().print = function() end
-getgenv().warn = function() end
+
+while not game:IsLoaded() do
+        wait(1)
+    end
+
 local replicatedStorage = game:GetService("ReplicatedStorage")
 local workspaceService = game:GetService("Workspace")
-local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
+local Fluent = loadstring(game:HttpGetAsync("https://github.com/ActualMasterOogway/Fluent-Renewed/releases/latest/download/Fluent.luau", true))()
 local TeleportService = game:GetService("TeleportService")
 local http = game:GetService("HttpService");
 local VIM = game:GetService("VirtualInputManager");
@@ -21,184 +14,26 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local LocalPlayer = Players.LocalPlayer;
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
 local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
-local toggleState = false          
-local defeatErenExists = false     
 
-local player = game:GetService("Players").LocalPlayer
-local starterPlayer = game:GetService("StarterPlayer")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+wait(0.1)
+local workspace = game:GetService("Workspace")
+local cf = workspace:WaitForChild("Characters")
+local cfc = cf:WaitForChild(player.Name)
+local rigChildName = "Rig_" .. player.Name
+local rigChild = cfc:WaitForChild(rigChildName)
+wait(0.1)
 
-local bakaLocal = player:WaitForChild("PlayerScripts"):FindFirstChild("Baka")
-local bakaStarter = starterPlayer:WaitForChild("StarterPlayerScripts"):FindFirstChild("Baka")
-
-if bakaLocal then
-    bakaLocal:Destroy()
-elseif bakaStarter then
-    bakaStarter:Destroy()
-else
-    print("safe")
-end
-
-
-local Window = Fluent:CreateWindow({
-    Title = "Nexus Hub AoT:R",
-    SubTitle = "by Ash",
-    TabWidth = 160,
-    Size = UDim2.fromOffset(580, 460),
-    Acrylic = true,
-    Theme = "Darker",
-    MinimizeKey = Enum.KeyCode.LeftControl,
-})
-
-local Tabs = {
-    Main = Window:AddTab({ Title = "Main", Icon = "" }),
-    Extras = Window:AddTab({ Title = "Extras", Icon = "" }),
-    Misc = Window:AddTab({ Title = "Misc", Icon = "" }),
-    Stockpile = Window:AddTab({ Title = "Stockpile", Icon = "" }),
-    Discord = Window:AddTab({ Title = "Discord", Icon = "" }),
-    Settings = Window:AddTab({ Title = "Settings", Icon = "" }),
-}
-
-Tabs.Discord:AddParagraph({
-    Title = "Discord Invite",
-    Content = "https://discord.gg/KEF7xMZQPP"
-})
-Tabs.Discord:AddButton({
-    Title = "Copy Discord Invite",
-    Description = "Copy Discord Invite",
-    Callback = function()
-   setclipboard("https://discord.gg/KEF7xMZQPP")
-    end
-})
-
-
-InterfaceManager:SetFolder("NexusHub")
-SaveManager:SetFolder("NexusHub/settings")
-
-SaveManager:SetLibrary(Fluent)
-InterfaceManager:SetLibrary(Fluent)
-
-InterfaceManager:BuildInterfaceSection(Tabs.Settings)
-SaveManager:BuildConfigSection(Tabs.Settings)
-
-Window:SelectTab(1)
-
-Tabs.Main:AddToggle("AutoAttackRaid", {
-    Title = "Auto Attack Raid",
-    Description = "Enable/disable it gng",
-    Default = false,
-    Callback = function(state)
-        toggleState = state
-        if state then
-            print("")
-        else
-            print("")
-        end
-    end,
-})
-
-
-
-local args = { "Data", "Copy" }
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-
-local data = ReplicatedStorage
-    :WaitForChild("Assets")
-    :WaitForChild("Remotes")
-    :WaitForChild("GET")
-    :InvokeServer(unpack(args))
-
-local function formatNestedTable(tbl)
-    local content = ""
-    for key, value in pairs(tbl) do
-        if type(value) == "table" then
-            content = content .. key .. ": (Table)\n"
-            for subKey, subValue in pairs(value) do
-                content = content .. "  " .. subKey .. ": " .. tostring(subValue) .. "\n"
-            end
-        else
-            content = content .. key .. ": " .. tostring(value) .. "\n"
-        end
-    end
-    return content
-end
-
-if data and data.Slots and data.Current_Slot then
-    local slotData = data.Slots[data.Current_Slot]
-
-    if slotData and slotData.Currency then
-        for key, value in pairs(slotData.Currency) do
-            Tabs.Stockpile:AddParagraph({
-                Title = "Currency: " .. key,
-                Content = "Amount: " .. tostring(value)
-            })
-        end
-    else
-        print("Currency table is missing or unavailable.")
-    end
-
-    if slotData and slotData.Inventory then
-        for categoryName, categoryItems in pairs(slotData.Inventory) do
-            local content = formatNestedTable(categoryItems)
-            Tabs.Stockpile:AddParagraph({
-                Title = "Inventory: " .. categoryName,
-                Content = content
-            })
-        end
-    else
-        print("Inventory table is missing or unavailable.")
-    end
-else
-    print("Error: Slot data structure is invalid or missing.")
-end
-
-
-
-local function AutoAttackRaid_HoverBigRockBP()
-    local defendErenFolder = Workspace:WaitForChild("Unclimbable"):WaitForChild("Objective"):WaitForChild("Defend_Eren")
-    local bigRock = defendErenFolder:FindFirstChild("BigRock")
-    while not bigRock do
-        task.wait(1)
-        bigRock = defendErenFolder:FindFirstChild("BigRock")
-    end
-
-
-    local bodyPosition = Instance.new("BodyPosition")
-    bodyPosition.Parent = rootPart
-    bodyPosition.MaxForce = Vector3.new(0, 0, 0)
-    bodyPosition.P = 5000
-    bodyPosition.D = 500
-
-    local bodyGyro = Instance.new("BodyGyro")
-    bodyGyro.Parent = rootPart
-    bodyGyro.MaxTorque = Vector3.new(0, 0, 0)
-    bodyGyro.P = 2500
-
-    print("")
-    while true do
-        task.wait(0.1)
-        if toggleState then
-            
-            bodyPosition.MaxForce = Vector3.new(1e6, 1e6, 1e6)
-            bodyGyro.MaxTorque = Vector3.new(1e6, 1e6, 1e6)
-            local targetPos = bigRock.Position + Vector3.new(0, 1000, 0)
-            bodyPosition.Position = targetPos
-        else
-            
-            bodyPosition.MaxForce = Vector3.new(0, 0, 0)
-            bodyGyro.MaxTorque = Vector3.new(0, 0, 0)
-        end
-    end
-end
 local function AutoAttackRaid_GetRemainingAmmo()
     local player = game:GetService("Players").LocalPlayer
-
 
     local character
     repeat
         character = player.Character or player.CharacterAdded:Wait()
         task.wait(0.1)
     until character
-
 
     local rig, rightContainer, leftContainer
     repeat
@@ -208,9 +43,7 @@ local function AutoAttackRaid_GetRemainingAmmo()
         task.wait(0.1)
     until rig and rightContainer and leftContainer
 
-
     local totalAmmo = #rightContainer:GetChildren() + #leftContainer:GetChildren()
-
 
     local usedCount = 0
     for _, spear in ipairs(rightContainer:GetChildren()) do
@@ -224,10 +57,8 @@ local function AutoAttackRaid_GetRemainingAmmo()
         end
     end
 
-
     local nextShotIndex = usedCount + 1
     local chosenContainer = (nextShotIndex % 2 == 1) and rightContainer or leftContainer
-
 
     local spearsArray = {}
     for _, spear in ipairs(chosenContainer:GetChildren()) do
@@ -237,7 +68,6 @@ local function AutoAttackRaid_GetRemainingAmmo()
         return tonumber(a.Name) < tonumber(b.Name)
     end)
 
-
     local spearToFire = nil
     for _, spear in ipairs(spearsArray) do
         if not spear:GetAttribute("Used") then
@@ -245,7 +75,6 @@ local function AutoAttackRaid_GetRemainingAmmo()
             break
         end
     end
-
 
     if not spearToFire then
         local altContainer = (chosenContainer == rightContainer) and leftContainer or rightContainer
@@ -267,128 +96,217 @@ local function AutoAttackRaid_GetRemainingAmmo()
     return spearToFire, totalAmmo
 end
 
-local function AutoAttackRaid_MasterAttack()
-    while toggleState do
-        local debris = Workspace:FindFirstChild("Debris")
-        if debris and debris:FindFirstChild("Roar") then
-            print("Titan is roaring, skipping attack.")
+
+local function positionAboveStartPoint()
+    local character = game:GetService("Players").LocalPlayer.Character
+    local rootPart = character and character:WaitForChild("HumanoidRootPart")
+
+    if rootPart then
+        local startPoint = game:GetService("Workspace"):FindFirstChild("Points") and game:GetService("Workspace").Points:FindFirstChild("Start")
+
+        if startPoint then
+            local targetPos = startPoint.Position + Vector3.new(0, 150, 0) -- Offset 350 studs above
+
+            local bodyPosition = Instance.new("BodyPosition")
+            bodyPosition.Parent = rootPart
+            bodyPosition.Position = targetPos
+            bodyPosition.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+            bodyPosition.D = 50
+            bodyPosition.P = 50
+
+            local bodyGyro = Instance.new("BodyGyro")
+            bodyGyro.Parent = rootPart
+            bodyGyro.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+            bodyGyro.P = 50
+
+            print("Character positioned 350 studs above the Start point.")
         else
-            local nextSpear, totalAmmo = AutoAttackRaid_GetRemainingAmmo()
-            if totalAmmo > 0 and nextSpear then
-                local titansFolder = Workspace:FindFirstChild("Titans")
-                if not titansFolder then
-                    print("Titans folder not found!")
-                else
-                    
-                    local titansToAttack = {}
-                    for _, titan in pairs(titansFolder:GetChildren()) do
-                        if titan.Name ~= "Attack_Titan" and not titan:GetAttribute("Dead") then
-                            local hitboxes = titan:FindFirstChild("Hitboxes")
-                            local hit = hitboxes and hitboxes:FindFirstChild("Hit")
-                            local nape = hit and hit:FindFirstChild("Nape")
-                            if nape and nape:IsA("BasePart") then
-                                table.insert(titansToAttack, nape.Position)
-                            end
-                        end
-                    end
+            warn("Start point not found.")
+        end
+    else
+        warn("HumanoidRootPart not found in character.")
+    end
+end
 
-                    if #titansToAttack > 0 then
-                        for _, pos in ipairs(titansToAttack) do
-                            ReplicatedStorage.Assets.Remotes.GET:InvokeServer("Spears", "S_Fire", tostring(nextSpear))
-                            ReplicatedStorage.Assets.Remotes.POST:FireServer("Spears", "S_Explode", pos, 0.11289310455322266, 777.47021484375)
-                        end
-                        print("Fired spears at multiple titans! NextSpear:", nextSpear, "Total Ammo:", totalAmmo)
-                        task.wait(0.5)  -- Wait 1 second for normal titans
-                    else
-                        print("No non-attack titans found.")
-                    end
+local function ATattack()
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    local titansFolder = workspace:FindFirstChild("Titans")
+    local attackTitan = titansFolder and titansFolder:FindFirstChild("Attack_Titan")
 
-                    
-                    local attackTitan = titansFolder:FindFirstChild("Attack_Titan")
-                    if attackTitan and attackTitan:FindFirstChild("Hitboxes") then
-                        local attackNape = attackTitan.Hitboxes:FindFirstChild("Hit") and attackTitan.Hitboxes.Hit:FindFirstChild("Nape")
-                        if attackNape then
-                            for i = 1, 5 do
-                                local nextSpearRapid, _ = AutoAttackRaid_GetRemainingAmmo()
-                                if nextSpearRapid then
-                                    ReplicatedStorage.Assets.Remotes.GET:InvokeServer("Spears", "S_Fire", tostring(nextSpearRapid))
-                                    ReplicatedStorage.Assets.Remotes.POST:FireServer("Spears", "S_Explode", attackNape.Position, 0.91289310455322266, 999.47021484375)
-                                else
-                                    print("No valid spear found for rapid fire!")
-                                    break
-                                end
-                                task.wait(0.1)  
-                            end
-                            print("Fired rapidly at Eren!")
-                        end
-                    end
-                end
-            else
-                print("No ammo left!")
+    if not attackTitan then
+        warn("Attack Titan not found!")
+        return
+    end
+
+    local napeHitbox = attackTitan:FindFirstChild("Hitboxes").Hit.Nape
+    if not napeHitbox then
+        warn("No Nape Hitbox found on Attack Titan!")
+        return
+    end
+
+    local pos = napeHitbox.Position
+
+local nextSpear, totalAmmo = AutoAttackRaid_GetRemainingAmmo()
+                if nextSpear then
+                    ReplicatedStorage.Assets.Remotes.GET:InvokeServer("Spears", "S_Fire", tostring(nextSpear))
+
+
+        for _ = 1, 30 do
+            ReplicatedStorage.Assets.Remotes.POST:FireServer("Spears", "S_Explode", pos, 0.11289310455322266, 777.47021484375)
+        end
+    else
+        warn("Failed to retrieve next spear! Ammo system may not be working correctly.")
+    end
+end
+
+local function FemaleAttack()
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    local titansFolder = workspace:FindFirstChild("Titans")
+    local femaleTitan = titansFolder and titansFolder:FindFirstChild("Female_Titan")
+
+    if not femaleTitan then
+        warn("Female Titan not found!")
+        return
+    end
+
+    local napeHitbox = femaleTitan:FindFirstChild("Hitboxes").Hit.Nape
+    if not napeHitbox then
+        warn("No Nape Hitbox found on Female Titan!")
+        return
+    end
+
+    local pos = napeHitbox.Position
+
+local nextSpear, totalAmmo = AutoAttackRaid_GetRemainingAmmo()
+                if nextSpear then
+                    ReplicatedStorage.Assets.Remotes.GET:InvokeServer("Spears", "S_Fire", tostring(nextSpear))
+
+
+        for _ = 1, 30 do
+            ReplicatedStorage.Assets.Remotes.POST:FireServer("Spears", "S_Explode", pos, 0.11289310455322266, 777.47021484375)
+        end
+    else
+        warn("Failed to retrieve next spear! Ammo system may not be working correctly.")
+    end
+end
+
+local function RetryandRewards()
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    local objectives = ReplicatedStorage:FindFirstChild("Objectives")
+
+    if not objectives then
+        warn("Objectives folder not found in ReplicatedStorage")
+        return
+    end
+
+    local FD = objectives:FindFirstChild("Defeat_Annie")
+    if not FD then
+        warn("Defeat_Annie objective not found")
+        return
+    end
+
+    -- Wait for FD to become 1 before proceeding
+    while FD.Value ~= 1 do
+        task.wait(1) -- Check every second
+    end
+
+    print("Defeat_Annie achieved! Waiting 10 seconds before claiming rewards...")
+    task.wait(15)
+
+    -- Fire the remote calls for retry and rewards
+    local args = { "Functions", "Retry", "Add" }
+    ReplicatedStorage:WaitForChild("Assets"):WaitForChild("Remotes"):WaitForChild("GET"):InvokeServer(unpack(args))
+
+    local premiumArgs = { "S_Rewards", "Chest", "Premium" }
+    ReplicatedStorage:WaitForChild("Assets"):WaitForChild("Remotes"):WaitForChild("GET"):InvokeServer(unpack(premiumArgs))
+
+    local freeArgs = { "S_Rewards", "Chest", "Free" }
+    ReplicatedStorage:WaitForChild("Assets"):WaitForChild("Remotes"):WaitForChild("GET"):InvokeServer(unpack(freeArgs))
+
+    print("Rewards claimed successfully!")
+end
+
+local function missionControl()
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    local objectives = ReplicatedStorage:FindFirstChild("Objectives")
+
+    if not objectives then
+        warn("Objectives folder not found in ReplicatedStorage")
+        return
+    end
+
+    print("found")
+
+    while true do
+        local FD = objectives:FindFirstChild("Defeat_Annie")
+        local DE = objectives:FindFirstChild("Defeat_Eren")
+        
+        while FD and FD.Value == 0 do
+            -- Before attacking, check if Roar exists in workspace.Debris
+            if workspace.Debris:FindFirstChild("Roar") then
+                print("Roar detected, skipping attack...")
+                task.wait(1) -- Wait a moment before checking again
+                continue
             end
+            
+            -- Check if Eren has appeared and switch target if needed
+            DE = objectives:FindFirstChild("Defeat_Eren")
+            if DE and DE.Value == 0 then
+                print("Eren has spawned! Switching target.")
+                while DE.Value == 0 do
+                    if workspace.Debris:FindFirstChild("Roar") then
+                        print("Roar detected, skipping attack on Eren...")
+                        task.wait(1)
+                        continue
+                    end
+                    
+                    print("Attacking Attack Titan...")
+                    ATattack()
+                    task.wait(1)
+                end
+                break
+            end
+            
+            print("Continuing attack on Female Titan...")
+            FemaleAttack()
+            task.wait(1)
         end
-        task.wait(0.5)  
+
+        task.wait(1)
     end
 end
 
-local function AutoAttackRaid_HandleRewards()
-    local defeatErenObjective = ReplicatedStorage:FindFirstChild("Objectives")
-                                and ReplicatedStorage.Objectives:FindFirstChild("Defeat_Eren")
-    if defeatErenObjective and defeatErenObjective.Value == 1 then
-        print("Defeat_Eren objective reached! Claiming rewards...")
-        task.wait(0.5)
-        local premiumArgs = { "S_Rewards", "Chest", "Premium" }
-        ReplicatedStorage:WaitForChild("Assets")
-           :WaitForChild("Remotes")
-           :WaitForChild("GET")
-           :InvokeServer(unpack(premiumArgs))
-        local freeArgs = { "S_Rewards", "Chest", "Free" }
-        ReplicatedStorage:WaitForChild("Assets")
-           :WaitForChild("Remotes")
-           :WaitForChild("GET")
-           :InvokeServer(unpack(freeArgs))
-        print("Rewards Claimed! Attempting retry...")
-        local retryArgs = { "Functions", "Retry", "Add" }
-        ReplicatedStorage:WaitForChild("Assets")
-           :WaitForChild("Remotes")
-           :WaitForChild("GET")
-           :InvokeServer(unpack(retryArgs))
-        print("Retry remote fired!")
-    end
-end
+	local Window = Fluent:CreateWindow({
+    Title = "Nexus Hub AoT:R",
+    SubTitle = "by Ash",
+    TabWidth = 160,
+    Size = UDim2.fromOffset(580, 460),
+    Acrylic = true, 
+    Theme = "Darker",
+    MinimizeKey = Enum.KeyCode.LeftControl 
+})
+local Tabs = {
+    Main = Window:AddTab({ Title = "Main", Icon = "" }),
+    Extras = Window:AddTab({ Title = "Extras", Icon = "" }),
+    Misc = Window:AddTab({ Title = "Misc", Icon = "" }),
+    Stockpile = Window:AddTab({ Title = "Stockpile", Icon = "" }),
+    Discord = Window:AddTab({ Title = "Discord", Icon = "" }),
+    Settings = Window:AddTab({ Title = "Settings", Icon = "" }),
+}
 
-task.spawn(function()
-    while true do
-        local attackTitan = titansFolder:FindFirstChild("Attack_Titan")
-        defeatErenExists = (attackTitan ~= nil)
-        task.wait(0.5)
-    end
-end)
+    InterfaceManager:SetFolder("NexusHub")
+    SaveManager:SetFolder("NexusHub/settingsforfemale")
+
+    SaveManager:SetLibrary(Fluent)
+    InterfaceManager:SetLibrary(Fluent)
+
+    InterfaceManager:BuildInterfaceSection(Tabs.Settings)
+    SaveManager:BuildConfigSection(Tabs.Settings)
+    Window:SelectTab(1)
 
 
-task.spawn(function()
-    while true do
-        if toggleState then
-            AutoAttackRaid_MasterAttack()
-        end
-        task.wait(0.5)
-    end
-end)
 
-
-task.spawn(function()
-    while true do
-        AutoAttackRaid_HandleRewards()
-        task.wait(0.5)
-    end
-end)
-
-
-task.spawn(function()
-    AutoAttackRaid_HoverBigRockBP()
-end)
-
-local Togglespearrefill = Tabs.Main:AddToggle("Spear Refill", 
+local Togglespearrefill = Tabs.Main:CreateToggle("Spear Refill", 
 {
     Title = "Auto Spear Refill", 
     Description = "Auto refill your spears",
@@ -399,14 +317,14 @@ local Togglespearrefill = Tabs.Main:AddToggle("Spear Refill",
                 local whentofirespearrefill = game:GetService("Players").LocalPlayer.PlayerGui.Interface.HUD.Main.Top.Spears.Spears.Text
                 if string.find(whentofirespearrefill, "0") and not spearHasFired then
 
-                    args = {
+                    local args = {
                         [1] = "Spears",
                         [2] = "Full_Reload",
                         [3] = "Left",
                         [4] = workspace:WaitForChild("Unclimbable"):WaitForChild("Reloads"):WaitForChild("GasTanks"):WaitForChild("Refill")
                     }
                     game:GetService("ReplicatedStorage"):WaitForChild("Assets"):WaitForChild("Remotes"):WaitForChild("POST"):FireServer(unpack(args))
-                    
+                    local leftRefillOnly = true
                     spearHasFired = true
                 end
             end
@@ -426,6 +344,22 @@ local Togglespearrefill = Tabs.Main:AddToggle("Spear Refill",
         end 
     end 
 })
+
+local Togglefemaleraid = Tabs.Main:CreateToggle("Female Auto Raid", {
+    Title = "auto female raid u migger", 
+    Description = "Auto raid you migger",
+    Default = false,
+    Callback = function(state)
+        if state then
+            task.spawn(missionControl)    
+            task.spawn(positionAboveStartPoint) 
+            task.spawn(RetryandRewards)
+        end
+    end
+})
+
+
+
 SaveManager:LoadAutoloadConfig()
 
- 
+
