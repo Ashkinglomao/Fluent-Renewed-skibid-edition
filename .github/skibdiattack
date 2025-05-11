@@ -2,7 +2,8 @@
 while not game:IsLoaded() do
         wait(1)
     end
-
+getgenv().print = function() end
+getgenv().warn = function() end
 local replicatedStorage = game:GetService("ReplicatedStorage")
 local workspaceService = game:GetService("Workspace")
 local Fluent = loadstring(game:HttpGetAsync("https://github.com/ActualMasterOogway/Fluent-Renewed/releases/latest/download/Fluent.luau", true))()
